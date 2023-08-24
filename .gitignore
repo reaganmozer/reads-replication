@@ -4,3 +4,4 @@
 .Ruserdata
 data-raw/
 .DS_Store
+data-generated/pilotML_model.RData
