@@ -2,8 +2,6 @@
 # Estimate impacts on top-line results (human-coded essay quality) and across the machine-generated measures of the text.
 #
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-setwd("../")
 options(stringsAsFactors = FALSE)
 
 library( tidyverse )
@@ -11,7 +9,7 @@ library(dplyr)
 library(lmerTest)
 library(lmtest)
 
-load("generated_data/meta.RData")
+load(here::here( "data-generated/meta.RData") )
 
 # Characteristics of the sample
 length(unique(meta$s_id))

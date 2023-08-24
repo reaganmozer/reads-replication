@@ -1,9 +1,7 @@
 ## Estimate impacts on the prevalence and frequency of use of a list of pre-identified
 # "concept" words and phrases within each grade and subject
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-setwd("../")
-options(stringsAsFactors = F)
+options(stringsAsFactors = FALSE)
 
 library(dplyr)
 library(tidyverse)
@@ -14,7 +12,8 @@ library(kableExtra)
 library(quanteda)
 library(tada)
 
-load("Generated Data/meta.RData")
+load( here::here( "data-generated/meta.RData" ) )
+
 
 # Create a data frame containing the concept words identified in the MORE study
 create_cwords <- function() {
@@ -87,7 +86,7 @@ res$p.adj = p.adjust(res$p.value, "fdr")
 res = res %>% select(grade, subject, type, everything())
 
 
-save(res,file="Results/concept-tabs.RData")
+save(res, file="Results/concept-tabs.RData")
 
 
 

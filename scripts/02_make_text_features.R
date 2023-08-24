@@ -2,13 +2,13 @@
 #
 # Make large set of features for the text corpus.
 
-source( "reads-replication/setup.R" )
+source( here::here( "scripts/reads-replication/setup.R" ) )
 
-source("reads-replication/utils.R")
+source( here::here( "reads-replication/utils.R") )
 
 #### Prepare data for processing ####
 
-load( reads_file_path("generated_data/meta.RData") )
+load( here::here("data-generated/meta.RData") )
 
 all.feats = subset(meta, select=c(s_id, grade, subject))
 all.equal(all.feats,

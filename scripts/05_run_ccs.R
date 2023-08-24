@@ -2,19 +2,18 @@
 ## Simple CCS analysis of the essays within each grade and subject
 ##
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-setwd("../")
 options(stringsAsFactors = FALSE)
 
 library( tidyverse )
 library( textreg )
 library( tm )
-source( "Scripts/cluster_threshold_C.R" )
+source( here::here( "scripts/cluster_threshold_C.R" ) )
 
 
 #### Load the data #####
 
-load("Generated Data/meta.RData")
+load( here::here( "data-generated/meta.RData" ) )
+
 
 text$sch_id = meta$sch_id
 text$sch_gr_block = paste0( meta$sch_id, "-", meta$grade )
