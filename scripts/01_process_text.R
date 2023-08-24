@@ -12,13 +12,13 @@
 #
 
 
-source("reads-replication/setup.R")
+source( here::here( "scripts/reads-replication/setup.R" ) )
 
 library( haven )
-dat=read.csv( reads_file_path("Data/write_machinelearning_replication_main.csv"),
+dat=read.csv( here::here("data-raw/write_machinelearning_replication_main.csv"),
               encoding='WINDOWS-1252')
 
-reads.dict=read.table( reads_file_path("Data/reads_dict.txt") )
+reads.dict=read.table( here::here("data/reads_dict.txt") )
 head( reads.dict )
 
 
@@ -205,5 +205,5 @@ save(meta, text, rater.scores,
 dnames = paste0("s", text$s_id,"_grade", text$grade,"_", text$subject,".txt")
 
 tada::prep_external(text$text.sc,
-                    dir=reads_file_path("Generated Data/text_files/"),
+                    dir=here::here("data-external/text_files/"),
                     docnames=dnames)

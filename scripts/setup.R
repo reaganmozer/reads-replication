@@ -19,6 +19,9 @@ library( softmaxreg )
 library( tada )
 
 
-reads_file_path <- function( file ) {
-  here::here( "../../", file )
-}
+
+# Set up needed directories to save results
+dir.create(here::here("Results/"), showWarnings = FALSE )
+dir.create(here::here("Figures/"), showWarnings = FALSE )
+dir.create(here::here("Tables/"), showWarnings = FALSE )
+dir.create(here::here("data-raw/"), showWarnings = FALSE )
