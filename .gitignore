@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 data-raw/
+data-external/
 .DS_Store
 data-generated/pilotML_model.RData
-data-external/
+data-generated/meta.RData
