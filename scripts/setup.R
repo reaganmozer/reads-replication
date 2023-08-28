@@ -8,12 +8,14 @@ library(quanteda)
 library(textmatch)
 library(data.table)
 library(tidyverse)
+library(quanteda.textstats)
+library(textdata)
+
+#devtools::install_github("quanteda/quanteda.sentiment")
+#devtools::install_github("kbenoit/quanteda.dictionaries")
 library(quanteda.sentiment)
 library(quanteda.dictionaries)
-library(quanteda.textstats)
 
-#devtools::install_github( "https://github.com/cran/softmaxreg" )
-library( softmaxreg )
 
 # Our library
 library( tada )

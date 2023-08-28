@@ -24,7 +24,7 @@ all.feats = select(pilot, ID, writing_quality_score_1,
                    writing_quality_score_2, more)
 
 # Convert text to UTF-8
-pilot$response <- iconv(pilot$response, from='WINDOWS-1252', to='UTF-8')
+pilot$response <- iconv(pilot$response, from='WINDOWS-1252', to='ASCII', sub=" ")
 
 # Get text (and repair one piece of spelling)
 essay.text = pilot$response %>%
@@ -44,7 +44,8 @@ all.feats = generate_features(essay.text,
 table( all.feats$xxx )
 
 # Add Word2Vec projections for each essay on 50 dimensions
-load( "../data-raw/glove.50d.RData" )
+glove.50d = textdata::embedding_glove6b(dimensions = 50)
+
 all.feats = tada::extract_w2v( clean_text(essay.text),
                          meta = all.feats,
                          model = glove.50d )
@@ -52,13 +53,15 @@ all.feats = tada::extract_w2v( clean_text(essay.text),
 
 
 # Add externally computed LIWC-generated features
-all.feats <- tada::extract_liwc("../generated_data/pilot_LIWC.csv",
-              meta = all.feats, ID.liwc = 1, ID.meta = "ID",
+all.feats <- tada::extract_liwc("data-generated/LIWC_pilot.csv",
+              meta = all.feats, ID.liwc = "ID", ID.meta = "ID",
               clean = FALSE )
 
 
 # And externally computed TAACO features
-all.feats <- tada::extract_taaco("../generated_data/pilot_taaco_results.csv",
+tada::prep_external(essay.text, dir="data-generated/pilot-texts/", docnames=pilot$ID)
+
+all.feats <- tada::extract_taaco("data-generated/taaco_pilot.csv",
                             meta = all.feats,
                             ID.meta = "ID" )
 
@@ -73,4 +76,4 @@ all.feats = tada::clean_features( all.feats,
 
 dim(all.feats)
 
-save(all.feats, file="../generated_data/all.pilot.RData")
+save(all.feats, file="data-generated/all.pilot.RData")
