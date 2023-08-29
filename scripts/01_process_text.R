@@ -18,6 +18,8 @@ library( haven )
 dat=read.csv( here::here("data-raw/write_machinelearning_replication_main.csv"),
               encoding='WINDOWS-1252')
 
+
+
 reads.dict=read.table( here::here("data/reads_dict.txt") )
 head( reads.dict )
 
@@ -65,7 +67,9 @@ dat2 %>% group_by(grade,subject) %>%
 
 
 # Something weird left over from Windows-1252 encoding; convert to UTF-8
-dat2$text <- iconv(dat2$text, from='WINDOWS-1252', to='UTF-8')
+dat2$text<- iconv(dat2$text, from='WINDOWS-1252', to='ASCII', sub=" ")
+
+#dat2$text <- iconv(dat2$text, from='WINDOWS-1252', to='UTF-8')
 
 dat2 %>% group_by(subject) %>%
   summarise(mean.nchar = mean(nchar(text)),
@@ -81,10 +85,10 @@ dat2 <- dat3
 
 
 # Clean up some punctuation stuff
-dat2$text.sc = tada::repair_spelling( dat2$text,
-                                c("s's","s'","."),
-                                c("s'","s'",".") )
-dat2$text.sc = iconv(tolower(dat2$text.sc), from="UTF-8", to="ASCII", sub="")
+dat2$text.sc = iconv(tolower(dat2$text), from="UTF-8", to="ASCII", sub="")
+dat2$text.sc = tada::repair_spelling( dat2$text.sc,
+                                      c("s's","s'","."),
+                                      c("s'","s'",".") )
 dat1 = dat2
 
 
@@ -194,16 +198,16 @@ text$text.sc = tm::stripWhitespace(text$text.sc)
 #### Save processed data to intermediate files ####
 
 write.csv(text,
-          file="generated_data/text_g1g2_consented.csv",
+          file="data-generated/text_g1g2_consented.csv",
           row.names=F)
 
 save(meta, text, rater.scores,
-     file="generated_data/meta.RData" )
+     file="data-generated/meta.RData" )
 
 
 # Write cleaned essays to text files for analysis via TAACO
 dnames = paste0("s", text$s_id,"_grade", text$grade,"_", text$subject,".txt")
 
 tada::prep_external(text$text.sc,
-                    dir=here::here("data-external/text_files/"),
+                    dir=here::here("data-external/main-texts/"),
                     docnames=dnames)

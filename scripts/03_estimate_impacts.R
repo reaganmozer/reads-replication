@@ -126,7 +126,7 @@ save(Mod.Sci, Mod.SS, est.sci, est.soc, file="results/tx_models.RData")
 
 ##### Estimate treatment impacts on generated text features #####
 
-load("generated_data/all.info.RData")
+load("data-generated/all.info.RData")
 tmp = select(meta, s_id, grade, subject, more, maprit_std)
 all.info = merge(tmp, all.info, by=c("s_id","grade", "subject", "more"))
 library(caret)
@@ -136,15 +136,17 @@ library(caret)
 #                     grade, spellcheck, TTR:Sixltr, prep:WCperChar, lemma_ttr:function_ttr,
 #                     basic_connectives:addition, reason_and_purpose:all_demonstratives, all_connective, pronoun_density)
 dat = dplyr::select(all.info, sch_id,t_id,more, maprit_std,subject,
-                    grade, spellcheck, lex_TTR:sent_Sixltr, WCperChar)
+                    grade, spellcheck, lex_TTR:lex_ELF,
+                    WCperChar:liwc_Sixltr, liwc_prep:liwc_AllPunc,
+                    taaco_basic_connectives:taaco_addition, taaco_reason_and_purpose:taaco_all_demonstratives,
+                    taaco_all_connective, taaco_pronoun_density)
 
 x = dat[,-c(1:6)]
 names(x)[caret::findLinearCombos(x)$remove]
-dat = select(dat, -meanWordSyllables)
+#dat = select(dat, -meanWordSyllables)
 caret::findCorrelation(cor(dat[,-c(1:6)]),names=T,exact=T,cutoff=0.9)
 
-dat = select(dat, -Flesch, -ARI,
-             -entropy, -lemma_ttr) # remove highly correlated features
+dat = select(dat, -lex_Flesch, -lex_ARI) # remove highly correlated features
 caret::findCorrelation(cor(dat[,-c(1:6)]),names=T,exact=T,cutoff=0.9)
 x = dat[,-c(1:6)]
 
@@ -153,9 +155,12 @@ rm=caret::nearZeroVar(x, uniqueCut = 2, freqCut=99/1, names=T)
 sort(apply(dat[,names(dat)%in%rm], 2, function(x)length(unique(x))))
 
 # remove features with near zero variance or high VOF
-dat = dat %>% select( -filler, -SemiC, -sexual, -swear, -Parenth, -OtherP,
-                      -Colon, -Quote, -nonflu, -Apostro, -Comma,
-                      -Dash, -Period)
+#dat = dat %>% select( -filler, -SemiC, -sexual, -swear, -Parenth, -OtherP,
+#                      -Colon, -Quote, -nonflu, -Apostro, -Comma,
+#                      -Dash, -Period)
+
+
+dat = dat %>% select( -liwc_filler, -liwc_sexual, -liwc_swear, -liwc_nonflu)
 
 
 #get_diffs = function(x, Z){
@@ -198,9 +203,11 @@ get_diffs = function(d, x){
 
 
 out=plyr::ddply(dat, ~subject+grade, function(d) get_diffs(d, x=d[,-c(1:6)]))
-add.vars = c("Analytic","Authentic","Clout","Tone",
-             "WC","WPS","Sixltr","XXX",
-             "TTR","Flesch.Kincaid")
+add.vars = c("liwc_Analytic","liwc_Authentic","liwc_Clout","liwc_Rone",
+             "liwc_WC","liwc_WPS","liwc_Sixltr","xxx",
+             "lex_TTR","lex_Flesch.Kincaid")
+
+
 out$planned=1*(out$var%in%add.vars)
 out.pl = out[out$planned==1,]
 out.un = out[out$planned==0,]

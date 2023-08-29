@@ -23,7 +23,7 @@ library( tada )
 
 
 # Set up needed directories to save results
-dir.create(here::here("Results/"), showWarnings = FALSE )
-dir.create(here::here("Figures/"), showWarnings = FALSE )
-dir.create(here::here("Tables/"), showWarnings = FALSE )
+dir.create(here::here("results/"), showWarnings = FALSE )
+dir.create(here::here("figures/"), showWarnings = FALSE )
+dir.create(here::here("tables/"), showWarnings = FALSE )
 dir.create(here::here("data-raw/"), showWarnings = FALSE )

@@ -38,6 +38,7 @@ all.feats = generate_features(essay.text,
                               terms = "xxx",
                               read = c("Flesch","Flesch.Kincaid", "ARI", "ELF",
                                        "meanWordSyllables"),
+                              ld=c("TTR","R","K"),
                               verbose = TRUE )
 
 # Note: term of 'xxx' are illegible words/phrases
@@ -59,7 +60,7 @@ all.feats <- tada::extract_liwc("data-generated/LIWC_pilot.csv",
 
 
 # And externally computed TAACO features
-tada::prep_external(essay.text, dir="data-generated/pilot-texts/", docnames=pilot$ID)
+tada::prep_external(essay.text, dir="data-external/pilot-texts/", docnames=pilot$ID)
 
 all.feats <- tada::extract_taaco("data-generated/taaco_pilot.csv",
                             meta = all.feats,

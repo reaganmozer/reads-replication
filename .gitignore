@@ -7,4 +7,4 @@ data-external/
 .DS_Store
 data-generated/pilotML_model.RData
 data-generated/meta.RData
-Data-generated/pilot-texts/
+old/
