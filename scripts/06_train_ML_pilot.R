@@ -60,9 +60,8 @@ train_ensemble = function( x, y, n.tune=3, preProc=NULL, bounds=NULL) {
   return(fit)
 }
 
-load("Generated Data/all.pilot.RData")
-dat = select(all.pilot,-ID,-Q1)
-names(dat)[1:2]=c("Yobs","Z")
+load("data-generated/all.pilot.RData")
+dat = select(all.pilot,-ID)
 
 # Preprocess the feature space to remove collinear features and features with near-zero variance
 
@@ -77,11 +76,11 @@ caret::findLinearCombos(X) # sanity check to make sure no redundant features
 table(dat$Yobs) # check bounds
 set.seed(123)
 fit = train_ensemble(x=X, y=dat$Yobs, n.tune=3, preProc=NULL, bounds=c(0,11))
-save(fit, file="Generated Data/pilotML_model.RData")
+save(fit, file="data-generated/pilotML_model.RData")
 
 # Use the trained model to predict for the current data set
-load("Generated Data/all.info.RData")
-all = select(all.info, score, more, everything()) %>% rename(Yobs=score, Z=more)
+load("data-generated/all.info.RData")
+all = select(all.info, score, more, everything()) %>% dplyr::rename(Yobs=score, Z=more)
 newX= as.matrix( select(all, names(X)) )
 
 # Generate predictions for case study sample

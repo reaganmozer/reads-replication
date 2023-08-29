@@ -128,4 +128,10 @@ all.info = merge(meta, all.info, by=c("s_id","subject", "grade"))
 
 
 all.info = all.info[with(all.info,order(s_id,subject)),]
+
+
+names(all.info) = gsub("lex_f.ent[, -c(1)]","lex_f.ent",names(all.info),fixed=T)
+names(all.info) = gsub(" ","_",names(all.info),fixed=T)
+
+
 save(all.info, file="data-generated/all.info.RData")

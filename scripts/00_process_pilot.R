@@ -77,4 +77,12 @@ all.feats = tada::clean_features( all.feats,
 
 dim(all.feats)
 
-save(all.feats, file="data-generated/all.pilot.RData")
+
+all.pilot = all.feats %>% select( -writing_quality_score_1) %>%
+  rename(Yobs=writing_quality_score_2, Z=more)
+
+names(all.pilot) = gsub("lex_f.ent[, -c(1)]","lex_f.ent",names(all.pilot),fixed=T)
+names(all.pilot) = gsub(" ","_",names(all.pilot),fixed=T)
+
+
+save(all.pilot, file="data-generated/all.pilot.RData")
