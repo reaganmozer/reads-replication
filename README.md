@@ -16,7 +16,7 @@ You can actually run the scripts out of order, if the files needed by the script
 # Notes on generated intermediate data files
 These scripts generate intermediate data files that are stored in `data-generated`.
 Many (not all) of these generated files are in the git repo.
-Some of the intermediate files have the original raw data, and are thus not commited.  The scripts will regenerate them and save them in the folder, if you have the original raw data.
+Some of the intermediate files have the original raw data, and are thus not committed.  The scripts will regenerate them and save them in the folder, if you have the original raw data.
 
 # note on data-external
 This folder is to hold files generated for external processing (e.g., LIWC).
