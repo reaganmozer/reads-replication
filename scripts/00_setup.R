@@ -19,7 +19,6 @@ library(quanteda.dictionaries)
 
 
 # Our library
-devtools::install_github("reaganmozer/tada")
 library(tada)
 
 
