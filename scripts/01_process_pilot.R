@@ -45,6 +45,7 @@ all.feats = generate_features(essay.text,
 table( all.feats$xxx )
 
 # Add Word2Vec projections for each essay on 50 dimensions
+options(timeout=240) # may need to run this if you get an error downloading the file below
 glove.50d = textdata::embedding_glove6b(dimensions = 50)
 
 all.feats = tada::extract_w2v( clean_text(essay.text),
