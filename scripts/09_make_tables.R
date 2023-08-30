@@ -14,8 +14,8 @@ stars[sums.out$p.adj<=0.05]="*"
 stars[sums.out$p.adj<=0.01]="**"
 stars[sums.out$p.adj<=0.001]="***"
 sout1 = sums.out %>% mutate(freq.diff=termfreq_1-termfreq_0,
-                            prop.essays_0=paste0(docfreq_0, " (",round(100*prop.docs_0,1),"%)"),
-                            prop.essays_1=paste0(docfreq_1," (",round(100*prop.docs_1,1),"%)"),
+                            prop.docs_0=paste0(docfreq_0, " (",round(100*prop.docs_0,digits=1),"%)"),
+                            prop.docs_1=paste0(docfreq_1," (",round(100*prop.docs_1,digits=1),"%)"),
                             diff=paste0(docfreq_1-docfreq_0," (",round(100*diff,1),"%)"))
 
 sout1 = select(sout1, grade, subject, type,termfreq_1,termfreq_0, freq.diff,

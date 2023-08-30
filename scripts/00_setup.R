@@ -2,13 +2,12 @@
 # Header library load script for all the replication files
 
 options(stringsAsFactors = FALSE)
-library(c(
+pkgs = c(
   "caret", "caretEnsemble", "data.table", "doParallel", "dplyr", "ggplot2", "ggthemes", "haven",
-  "kableExtra", "knitr", "lmertest", "lmtest", "plotrix", "quanteda", "quanteda.textstats",
-  "stringi", "textdata", "textmatch", "textreg", "tidyverse", "tm", "xtable"
-))
+  "kableExtra", "knitr", "lmerTest", "lmtest", "plotrix", "quanteda", "quanteda.textstats",
+  "stringi", "textdata", "textmatch", "textreg", "tidyverse", "tm", "xtable")
 
-
+lapply(pkgs, require, character.only=T)
 options(java.parameters = "-Xmx2g")
 library(bartMachine)
 
