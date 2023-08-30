@@ -1,7 +1,7 @@
 ## Process pilot data (a subset of G1 science essays from a different
 ## evaluation) that we will use to train the ML model
 
-source( here::here( "scripts/reads-replication/setup.R" ) )
+source( here::here( "scripts/00_setup.R" ) )
 
 
 pilot = read.csv( here::here( "data-raw/write_machinelearning_pilot_replication.csv" ),
