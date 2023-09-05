@@ -71,7 +71,7 @@ apply(dat2,2,anyNA) # check for no missing
 
 # Clean up some punctuation stuff
 dat2$text.sc = iconv(tolower(dat2$text), from="UTF-8", to="ASCII", sub="")
-dat2$text.sc = tada::repair_spelling( dat2$text.sc,
+dat2$text.sc = rcttext::repair_spelling( dat2$text.sc,
                                       c("s's","s'","."),
                                       c("s'","s'",".") )
 dat1 = dat2
@@ -136,10 +136,10 @@ words = tribble( ~from, ~to,
 
 
 
-dat2$text.sc = tada::repair_spelling( dat2$text.sc, words )
+dat2$text.sc = rcttext::repair_spelling( dat2$text.sc, words )
 
 # Expand some contractions
-dat2$text.sc = tada::repair_spelling( dat2$text.sc,
+dat2$text.sc = rcttext::repair_spelling( dat2$text.sc,
                                 c("they're","i'll"),
                                 c("they are","i will") )
 
@@ -149,7 +149,7 @@ additional_words = c("mona","striked","dinos","venus","wolly","xbox","youtube","
 additional_words = unique( c( additional_words, reads.dict$V1 ) )
 skip_prefix = c("#","1","2","3","8")
 
-dat2$text.sc=tada::apply_hunspell( dat2$text.sc,
+dat2$text.sc=rcttext::apply_hunspell( dat2$text.sc,
                              additional_words = additional_words,
                              skip_prefix = skip_prefix )
 
@@ -189,7 +189,7 @@ save(meta, text,
 # Write cleaned essays to text files for analysis via TAACO
 if (FALSE){ # only need to run once to generate intermediate files
 
-tada::prep_external(text$text.sc,
+rcttext::prep_external(text$text.sc,
                     dir=here::here("data-external/main-texts/"),
                     docnames=text$ID)
 }

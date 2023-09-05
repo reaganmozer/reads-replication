@@ -68,8 +68,8 @@ tmp=cwords %>% group_by(grade,subject) %>% do(terms.taught=paste0(.$concept_word
 text1 = merge(text, tmp, by=c("grade", "subject"))
 
 
-res.taught = text1 %>% group_by(grade, subject) %>% do(tada::textfx_terms(.$text.sc, .$more, unique(unlist(.$terms.taught)))) %>% mutate(type="taught")
-res.untaught = text1 %>% group_by(grade, subject) %>% do(tada::textfx_terms(.$text.sc, .$more, unique(unlist(.$terms.untaught)))) %>% mutate(type="untaught")
+res.taught = text1 %>% group_by(grade, subject) %>% do(rcttext::textfx_terms(.$text.sc, .$more, unique(unlist(.$terms.taught)))) %>% mutate(type="taught")
+res.untaught = text1 %>% group_by(grade, subject) %>% do(rcttext::textfx_terms(.$text.sc, .$more, unique(unlist(.$terms.untaught)))) %>% mutate(type="untaught")
 
 
 # combine results across taught and untaught terms and adjust for multiple comparisons

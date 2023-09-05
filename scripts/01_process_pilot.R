@@ -31,7 +31,7 @@ essay.text = pilot$response %>%
   repair_spelling( "shoud", "should" )
 
 # Generate set of general features
-all.feats = generate_features(essay.text,
+all.feats = rcttext::generate_features(essay.text,
                               meta = all.feats,
                                sent = TRUE,
                               clean_features = FALSE,
@@ -48,31 +48,31 @@ table( all.feats$xxx )
 options(timeout=240) # may need to run this if you get an error downloading the file below
 glove.50d = textdata::embedding_glove6b(dimensions = 50)
 
-all.feats = tada::extract_w2v( clean_text(essay.text),
+all.feats = rcttext::extract_w2v( clean_text(essay.text),
                          meta = all.feats,
                          model = glove.50d )
 
 
 
 # Add externally computed LIWC-generated features
-all.feats <- tada::extract_liwc("data-generated/LIWC_pilot.csv",
+all.feats <- rcttext::extract_liwc("data-generated/LIWC_pilot.csv",
               meta = all.feats, ID.liwc = "ID", ID.meta = "ID",
               clean = FALSE )
 
 
 # And externally computed TAACO features
 if (FALSE){ # only need to run once to generate intermediate files
-  tada::prep_external(essay.text, dir="data-external/pilot-texts/", docnames=pilot$ID)
+  rcttext::prep_external(essay.text, dir="data-external/pilot-texts/", docnames=pilot$ID)
 }
 
-all.feats <- tada::extract_taaco("data-generated/taaco_pilot.csv",
+all.feats <- rcttext::extract_taaco("data-generated/taaco_pilot.csv",
                             meta = all.feats,
                             ID.meta = "ID" )
 
 
 # Drop features we don't need/that are redundant
 dim(all.feats)
-all.feats = tada::clean_features( all.feats,
+all.feats = rcttext::clean_features( all.feats,
                             ignore = c( "ID",
                                         "writing_quality_score_1",
                                         "writing_quality_score_2",
