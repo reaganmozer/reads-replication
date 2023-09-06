@@ -29,7 +29,7 @@ names(sout1)=c("","","",
                "MORE","Control","Diff.",
                "")
 
-tab.cwords = xtable(as.data.frame(sout1), auto=F,
+tab.cwords = xtable::xtable(as.data.frame(sout1), auto=F,
                     caption="Use of taught and untaught concept words in treatment and control,
                     grouped by grade and subject. Columns show cumulative frequency (total number of occurrences) and prevalence
                     (number of unique occurrences) across essays in each group.", label="tab:cwords",
