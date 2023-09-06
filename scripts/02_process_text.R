@@ -22,7 +22,7 @@ head( reads.dict )
 
 
 # include only those who have all demographics and pre-test scores
-check.admin = select(dat, s_id, s_white_num:s_ses_high, s_dib_score_1819w, s_maprit_1819w, s_itt_consented)
+check.admin = dplyr::select(dat, s_id, s_white_num:s_ses_high, s_dib_score_1819w, s_maprit_1819w, s_itt_consented)
 table(apply(check.admin, 1, function(x)sum(is.na(x))))
 
 check.admin$anyNA = sapply(1:nrow(check.admin), function(x) sum(is.na(check.admin[x,-c(1)])))
@@ -46,7 +46,7 @@ levels(dat$grade)=c(1,2)
 dat %>% group_by(grade,more) %>% summarise(n.students=length(unique(s_id)))
 
 
-dat2 = dat %>% pivot_longer(cols=s_sci_write:s_ss_response, names_to=c("subject",".value"),
+dat2 = dat %>% tidyr::pivot_longer(cols=s_sci_write:s_ss_response, names_to=c("subject",".value"),
                             names_pattern="s_?(.*)_(.*)")  %>% rename(score=write, text=response) %>%
   filter(!is.na(score)) %>% mutate(subject=recode(subject, sci="science", ss="social")) %>%
   select(s_id:grade, subject, everything()) %>% arrange(s_id, grade, subject)
