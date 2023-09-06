@@ -48,7 +48,7 @@ soc$score_std = soc$score/avg_stats$sd_bar[[2]]
 Mod.Sci = lm( score_std ~ as.factor(sch_id) + grade +  maprit_std + more, data=sci)
 vcov_clust = sandwich::vcovCL( Mod.Sci, sci$t_id )
 vcov_clust
-est.sci=coeftest( Mod.Sci, vcov. = vcov_clust )
+est.sci=lmtest::coeftest( Mod.Sci, vcov. = vcov_clust )
 
 Mod.SS = lm( score_std ~ as.factor(sch_id) + grade +maprit_std + more, data=soc)
 vcov_clust2 = sandwich::vcovCL( Mod.SS, soc$t_id )
@@ -182,8 +182,8 @@ get_diffs = function(d, x){
     #mod = lm(var ~ as.factor(sch_id)+maprit_std + more*grade, data=tmp)
     #vc = sandwich::vcovCL(mod, tmp$t_id)
 
-    est=coeftest( mod, vcov. = vc )
-    CI = coefci(mod, vcov.=vc)
+    est= lmtest::coeftest( mod, vcov. = vc )
+    CI = lmtest::coefci(mod, vcov.=vc)
     res[j,2:5]=est[grep("more",rownames(est)),]
     res[j,6:7] = CI[grep("more",rownames(CI)),]
   }
