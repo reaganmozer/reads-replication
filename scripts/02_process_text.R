@@ -22,7 +22,7 @@ head( reads.dict )
 
 
 # include only those who have all demographics and pre-test scores
-check.admin = select(dat, s_id, s_white_num:s_ses_high, s_dib_score_1819w, s_maprit_1819w, s_itt_consented)
+check.admin = select(dat, s_id, s_dib_score_1819w, s_maprit_1819w, s_maprit_1819w_std, s_itt_consented)
 table(apply(check.admin, 1, function(x)sum(is.na(x))))
 
 check.admin$anyNA = sapply(1:nrow(check.admin), function(x) sum(is.na(check.admin[x,-c(1)])))
