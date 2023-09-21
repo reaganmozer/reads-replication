@@ -48,7 +48,7 @@ soc$score_std = soc$score/avg_stats$sd_bar[[2]]
 Mod.Sci = lm( score_std ~ as.factor(sch_id) + grade +  maprit_std + more, data=sci)
 vcov_clust = sandwich::vcovCL( Mod.Sci, sci$t_id )
 vcov_clust
-est.sci=coeftest( Mod.Sci, vcov. = vcov_clust )
+est.sci=lmtest::coeftest( Mod.Sci, vcov. = vcov_clust )
 
 Mod.SS = lm( score_std ~ as.factor(sch_id) + grade +maprit_std + more, data=soc)
 vcov_clust2 = sandwich::vcovCL( Mod.SS, soc$t_id )
@@ -58,7 +58,7 @@ est.soc=lmtest::coeftest( Mod.SS, vcov. = vcov_clust2 )
 texreg::screenreg(list(est.sci, est.soc),
                   custom.model.names=c("Science", "Social Studies"),
                   custom.coef.map = list("(Intercept)"=NA,
-                                         "grade2"="Grade 2", "maprit_imp"="Pre-test score", "more"="MORE"))
+                                         "grade2"="Grade 2", "maprit_std"="Pre-test score", "more"="MORE"))
 
 
 
@@ -78,19 +78,19 @@ est.soc_sch[,2] / est.soc[,2]
 texreg::screenreg(list(est.sci, est.sci_sch, est.soc, est.soc_sch),
                   custom.model.names=c("Science", "Sci (sch)", "Social Studies", "SS (sch)"),
                   custom.coef.map = list("(Intercept)"=NA,
-                                         "grade2"="Grade 2", "maprit_imp"="Pre-test score", "more"="MORE"))
+                                         "grade2"="Grade 2", "maprit_std"="Pre-test score", "more"="MORE"))
 
 
 
 if (FALSE){
   # Multilevel model for science scores
   mod.sci = lme4::lmer(score_std ~ 1 + grade + #mean.pretest+
-                   maprit_imp +
+                   maprit_std +
                    more + (1|sch_id) + (1|t_id),
                  data=sci)
   summary(mod.sci)
   mod.sci1 = lme4::lmer(score_std ~ 1 + grade + #mean.pretest+
-                    maprit_imp+
+                    maprit_std+
                     more + grade*more+ (1|sch_id) + (1|t_id),
                   data=sci)
 
@@ -98,12 +98,12 @@ if (FALSE){
 
   # Multilevel model for social scores
   mod.soc = lme4::lmer(score_std ~ 1 + grade + #mean.pretest+
-                   maprit_imp +
+                   maprit_std +
                    more + (1|sch_id) + (1|t_id),
                  data=soc)
 
   mod.soc1 = lme4::lmer(score_std ~ 1 + grade + #mean.pretest+
-                    maprit_imp +
+                    maprit_std +
                     more + (grade*more)+ (1|sch_id) + (1|t_id),
                   data=soc )
 
@@ -182,8 +182,8 @@ get_diffs = function(d, x){
     #mod = lm(var ~ as.factor(sch_id)+maprit_std + more*grade, data=tmp)
     #vc = sandwich::vcovCL(mod, tmp$t_id)
 
-    est=coeftest( mod, vcov. = vc )
-    CI = coefci(mod, vcov.=vc)
+    est= lmtest::coeftest( mod, vcov. = vc )
+    CI = lmtest::coefci(mod, vcov.=vc)
     res[j,2:5]=est[grep("more",rownames(est)),]
     res[j,6:7] = CI[grep("more",rownames(CI)),]
   }

@@ -45,7 +45,7 @@ dim(all.feats)
 
 glove.50d = textdata::embedding_glove6b(dimensions = 50)
 
-all.feats = rcttext::extract_w2v( clean_text(text$text.sc),
+all.feats = rcttext::extract_w2v( rcttext::clean_text(text$text.sc),
                                  meta = all.feats,
                                  model = glove.50d )
 
@@ -62,9 +62,9 @@ names(all.dists)[grep("cosine",names(all.dists))]="tdm.raw.cosine"
 
 
 # Calculate Word2Vec projections for each reference text on 50 dimensions
-proj = rcttext::extract_w2v( clean_text(text$text.sc), # projections for essay texts
+proj = rcttext::extract_w2v( rcttext::clean_text(text$text.sc), # projections for essay texts
                                model = glove.50d )
-proj.refs = rcttext::extract_w2v( clean_text(all.refs), # projections for reference texts
+proj.refs = rcttext::extract_w2v( rcttext::clean_text(all.refs), # projections for reference texts
                                model = glove.50d )
 
 proj.all = rbind(proj.refs, proj)

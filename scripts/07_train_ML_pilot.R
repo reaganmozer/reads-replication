@@ -9,7 +9,7 @@ options(stringsAsFactors = F)
 
 train_ensemble = function( x, y, n.tune=3, preProc=NULL, bounds=NULL) {
 
-  doParallel::registerDoParallel(detectCores()-1)
+  doParallel::registerDoParallel(parallel::detectCores()-1)
   foreach::getDoParWorkers()
 
 
@@ -26,7 +26,7 @@ train_ensemble = function( x, y, n.tune=3, preProc=NULL, bounds=NULL) {
               "rf", "rpart1SE", "RRFglobal",
               "svmPoly","svmRadial", "treebag")
 
-  methods.tl = list(gbm = caretModelSpec(method="gbm",verbose=F))
+  methods.tl = list(gbm = caretEnsemble::caretModelSpec(method="gbm",verbose=F))
   mods = caretEnsemble::caretList(x=as.matrix(x), y=y,trControl=control, preProcess=preProc,
                                   methodList=methods,tuneLength=n.tune, tuneList=methods.tl)
 

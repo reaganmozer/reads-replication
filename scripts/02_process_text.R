@@ -46,7 +46,7 @@ levels(dat$grade)=c(1,2)
 dat %>% group_by(grade,more) %>% summarise(n.students=length(unique(s_id)))
 
 
-dat2 = dat %>% pivot_longer(cols=s_sci_write:s_ss_response, names_to=c("subject",".value"),
+dat2 = dat %>% tidyr::pivot_longer(cols=s_sci_write:s_ss_response, names_to=c("subject",".value"),
                             names_pattern="s_?(.*)_(.*)")  %>% rename(score=write, text=response) %>%
   filter(!is.na(score)) %>% mutate(subject=recode(subject, sci="science", ss="social")) %>%
   select(s_id:grade, subject, everything()) %>% arrange(s_id, grade, subject)
