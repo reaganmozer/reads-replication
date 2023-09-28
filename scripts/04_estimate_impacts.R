@@ -16,9 +16,6 @@ sum(is.na(meta$s_maprit_1819w))
 meta$grade = as.factor(meta$grade)
 apply(meta,2,function(x)sum(is.na(x)))
 
-# Impute pretest score.
-#meta$maprit_imp = ifelse(is.na(meta$s_maprit_1819w),meta$mean.pretest, meta$s_maprit_1819w)
-
 # Standardize pretest
 meta$maprit_std = scale(meta$s_maprit_1819w)
 
@@ -121,10 +118,6 @@ tmp = select(meta, ID, s_id, grade, subject, more, maprit_std)
 all.info = merge(tmp, all.info, by=c("ID", "s_id","grade", "subject", "more"))
 
 
-# Dropping some features until TAACO and LIWC are redone
-# dat = dplyr::select(all.info, sch_id,t_id,more, maprit_std,subject,
-#                     grade, spellcheck, TTR:Sixltr, prep:WCperChar, lemma_ttr:function_ttr,
-#                     basic_connectives:addition, reason_and_purpose:all_demonstratives, all_connective, pronoun_density)
 dat = dplyr::select(all.info, sch_id,t_id,more, maprit_std,subject,
                     grade, spellcheck, lex_TTR:lex_ELF,
                     xxx:liwc_Sixltr, liwc_prep:liwc_AllPunc,
@@ -133,7 +126,6 @@ dat = dplyr::select(all.info, sch_id,t_id,more, maprit_std,subject,
 
 x = dat %>% select(-sch_id, -t_id, -more, -maprit_std, -subject, -grade)
 names(x)[caret::findLinearCombos(x)$remove]
-#dat = select(dat, -meanWordSyllables)
 caret::findCorrelation(cor(dat[,-c(1:6)]),names=T,exact=T,cutoff=0.9)
 
 dat = select(dat, -lex_Flesch, -lex_ARI) # remove highly correlated features
@@ -144,25 +136,8 @@ x = dat[,-c(1:6)]
 rm=caret::nearZeroVar(x, uniqueCut = 2, freqCut=99/1, names=T)
 sort(apply(dat[,names(dat)%in%rm], 2, function(x)length(unique(x))))
 
-# remove features with near zero variance or high VOF
-#dat = dat %>% select( -filler, -SemiC, -sexual, -swear, -Parenth, -OtherP,
-#                      -Colon, -Quote, -nonflu, -Apostro, -Comma,
-#                      -Dash, -Period)
-
-
 dat = dat %>% select( -liwc_filler, -liwc_sexual, -liwc_swear, -liwc_nonflu)
 
-
-#get_diffs = function(x, Z){
-#  Z = relevel(as.factor(Z),"1")
-#  res = data.frame(var=names(x), diff=NA, stat=NA, p.raw=NA, LL=NA, UL=NA)
-#  for (j in 1:ncol(x)){
-#  tmp = t.test(x[,j]~Z)
-#  res[j,-c(1)]=c(tmp$estimate[1]-tmp$estimate[2], tmp$statistic, tmp$p.value, tmp$conf.int[1], tmp$conf.int[2])
-#  }
-#  res$p.adj = p.adjust(res$p.raw, "fdr")
-#  return(res)
-#}
 
 #' For each column of x, conduct an analysis of impact of MORE intervention on
 #' feature represented by that column.
@@ -179,15 +154,12 @@ get_diffs = function(d, x){
     mod = lm(var ~ maprit_std + more, data=tmp)
     vc = sandwich::vcovCL(mod, tmp$sch_id)
 
-    #mod = lm(var ~ as.factor(sch_id)+maprit_std + more*grade, data=tmp)
-    #vc = sandwich::vcovCL(mod, tmp$t_id)
 
     est= lmtest::coeftest( mod, vcov. = vc )
     CI = lmtest::coefci(mod, vcov.=vc)
     res[j,2:5]=est[grep("more",rownames(est)),]
     res[j,6:7] = CI[grep("more",rownames(CI)),]
   }
-  #res$p.adj=p.adjust(res$p.raw, "fdr")
   return(res)
 }
 
@@ -218,8 +190,6 @@ diffs= all.info %>% group_by(subject, grade,more ) %>%
 diffs2 = all.info %>% group_by( subject, grade,more ) %>%
   dplyr::summarise_at(sort(all.vars[!all.vars%in%names(diffs)]), mean)
 
-#print(diffs)
-#print(diffs2)
 dd = diffs %>% pivot_longer(cols = -c(subject, grade,more ) ) %>%
   pivot_wider( names_from = more, values_from = value,
                names_prefix = "Grp_")
@@ -280,7 +250,5 @@ dd.out$pretty.CI.std = paste0("(", sprintf("%.2f",round(dd$LL.std,2)), ", ",
 dd = select(dd, grade, subject, name, delta, LL.std, UL.std, p.raw, p.adj)
 
 
-#dd = pivot_wider( dd, names_from=subject,
-#                 values_from = c(delta, LL.std, UL.std, p.raw, p.adj, pretty.CI) )
 save(dd.out, dd, file="results/LIWC_diffs_results.RData")
 

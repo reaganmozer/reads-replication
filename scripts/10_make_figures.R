@@ -26,7 +26,7 @@ levels(all.info$grade)=c("Grade 1", "Grade 2")
 all.info$subject=as.factor(all.info$subject)
 levels(all.info$subject)=c("Science", "Social Studies")
 
-load("Results/LIWC_diffs_results.RData")
+load("results/LIWC_diffs_results.RData")
 
 
 dd$name = stringi::stri_replace_all_regex(dd$name,
@@ -60,7 +60,7 @@ par(mfrow=c(1,1))
 
 ## Figure 3: Unplanned comparisons of LIWC features
 par(mfrow=c(2,2),mar=c(4.1,6.9,2.5,1.1),mgp=c(2.5,0.5,0))
-pdf(file="Figures/Fig3.pdf", width=9, height=8)
+pdf(file="figures/Fig3.pdf", width=9, height=8)
 par(mfrow=c(2,2),mar=c(4.1,6.9,2.5,1.1),mgp=c(2.5,0.5,0))
 rcttext::plot_textfx(dd.sci[dd.sci$grade==1 & dd.sci$type!="Planned",], main="Grade 1 Science",xlim=c(-0.8,0.8))
 rcttext::plot_textfx(dd.soc[dd.soc$grade==1 & dd.sci$type!="Planned",], main="Grade 1 Social Studies",xlim=c(-0.8,0.8))
@@ -116,7 +116,7 @@ ggplot(all.info, aes(x=1-tdm.raw.cosine, col=as.factor(more),fill=as.factor(more
   scale_x_continuous(limits=c(-0.1,1.0))+
   theme(axis.text.x = element_text(size=11), legend.text = element_text(size=11),
         legend.position="bottom")
-ggsave("Figures/Fig5.pdf", width=8, height=6)
+ggsave("figures/Fig5.pdf", width=8, height=6)
 
 
 

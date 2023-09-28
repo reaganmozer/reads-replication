@@ -26,10 +26,6 @@ feats = rcttext::generate_features(text$text,
                               ignore="s_id",
                               verbose = TRUE )
 
-#all.feats = cbind(all.feats, feats)
-  # Old version did not use meta argument in call to generate_features
-  # Now that it's used, this line isn't necessary,
-  # but this approach SHOULD work... (currently it's breaking)
 all.feats = feats
 
 # Load LIWC-generated features
@@ -61,7 +57,7 @@ all.dists = tdm.dists[with(tdm.dists,order(index.0, as.numeric(index.1))),]
 names(all.dists)[grep("cosine",names(all.dists))]="tdm.raw.cosine"
 
 
-# Calculate Word2Vec projections for each reference text on 50 dimensions
+# Calculate projections for each reference text on 50 dimensions
 proj = rcttext::extract_w2v( rcttext::clean_text(text$text.sc), # projections for essay texts
                                model = glove.50d )
 proj.refs = rcttext::extract_w2v( rcttext::clean_text(all.refs), # projections for reference texts

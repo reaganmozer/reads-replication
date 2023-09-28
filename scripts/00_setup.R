@@ -1,15 +1,12 @@
 
-# Header library load script for all the replication files
+options(stringsAsFactors = FALSE, java.parameters = "-Xmx2g")
 
-options(stringsAsFactors = FALSE)
 pkgs = c(
-  "caret", "caretEnsemble", "data.table", "doParallel", "dplyr", "ggplot2", "ggthemes", "haven",
-  "kableExtra", "knitr", "lmerTest", "lmtest", "plotrix", "quanteda", "quanteda.textstats",
+  "bartMachine", "caret", "caretEnsemble", "data.table", "devtools", "doParallel", "dplyr", "ggplot2", "ggthemes", "haven",
+  "kableExtra", "knitr", "lmerTest", "lmtest", "plotrix", "quanteda", "quanteda.textstats", "rlang",
   "stringi", "textdata", "textmatch", "textreg", "tidyverse", "tm", "xtable")
 
 lapply(pkgs, require, character.only=T)
-options(java.parameters = "-Xmx2g")
-library(bartMachine)
 
 
 #devtools::install_github("quanteda/quanteda.sentiment")
@@ -19,6 +16,7 @@ library(quanteda.dictionaries)
 
 
 # Our library
+#devtools::install_github("reaganmozer/rcttext")
 library(rcttext)
 
 
