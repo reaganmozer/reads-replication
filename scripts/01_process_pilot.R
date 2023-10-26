@@ -7,12 +7,6 @@ source( here::here( "scripts/00_setup.R" ) )
 pilot = read.csv( here::here( "data-raw/write_machinelearning_pilot_replication.csv" ),
                  encoding='WINDOWS-1252')
 
-if ( FALSE ) {
-  # For testing
-  # Cut down for illustration purposes (make everything faster)
-  set.seed(103403)
-  pilot = slice_sample( pilot, n=20 )
-}
 
 pilot <- pilot %>% mutate(ID=row_number())
 
@@ -20,7 +14,7 @@ pilot <- pilot %>% mutate(ID=row_number())
 pilot <- pilot |> filter(response != "")
 
 # Grab key columns of metadata
-all.feats = select(pilot, ID, writing_quality_score_1,
+all.feats = select(pilot, ID, 
                    writing_quality_score_2, more)
 
 # Convert text to UTF-8
@@ -29,6 +23,11 @@ pilot$response <- iconv(pilot$response, from='WINDOWS-1252', to='ASCII', sub=" "
 # Get text (and repair one piece of spelling)
 essay.text = pilot$response %>%
   repair_spelling( "shoud", "should" )
+
+
+# Save intermediate file for processing in LIWC
+pilot.out = data.frame(ID=pilot$ID, text.sc=essay.text)
+write.csv(pilot.out,file="data-generated/text_pilot.csv",row.names=F)
 
 # Generate set of general features
 all.feats = rcttext::generate_features(essay.text,
@@ -74,15 +73,13 @@ all.feats <- rcttext::extract_taaco("data-generated/taaco_pilot.csv",
 dim(all.feats)
 all.feats = rcttext::clean_features( all.feats,
                             ignore = c( "ID",
-                                        "writing_quality_score_1",
                                         "writing_quality_score_2",
                                         "more" ) )
 
 dim(all.feats)
 
 
-all.pilot = all.feats %>% select( -writing_quality_score_1) %>%
-  rename(Yobs=writing_quality_score_2, Z=more)
+all.pilot = all.feats %>%  rename(Yobs=writing_quality_score_2, Z=more)
 
 names(all.pilot) = gsub("lex_f.ent[, -c(1)]","lex_f.ent",names(all.pilot),fixed=T)
 names(all.pilot) = gsub(" ","_",names(all.pilot),fixed=T)

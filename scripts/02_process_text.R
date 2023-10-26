@@ -22,22 +22,22 @@ head( reads.dict )
 
 
 # include only those who have all demographics and pre-test scores
-check.admin = select(dat, s_id, s_dib_score_1819w, s_maprit_1819w, s_maprit_1819w_std, s_itt_consented)
+check.admin = select(dat, stu_id, s_dib_score_1819w, s_maprit_1819w, s_maprit_1819w_std, s_itt_consented)
 table(apply(check.admin, 1, function(x)sum(is.na(x))))
 
 check.admin$anyNA = sapply(1:nrow(check.admin), function(x) sum(is.na(check.admin[x,-c(1)])))
 
-rm.ids = check.admin$s_id[check.admin$anyNA>0]
-dat = dat %>% filter(!s_id %in% rm.ids)
+rm.ids = check.admin$stu_id[check.admin$anyNA>0]
+dat = dat %>% filter(!stu_id %in% rm.ids)
 
 rm(check.admin, rm.ids)
 
-dat = select(dat, s_id, t_moreresearchid, sch_researchid, s_itt_consented,
+dat = select(dat, stu_id, tch_id, sch_id, s_itt_consented,
              s_grade, s_maprit_1819w,
              s_sci_write, s_ss_write,
              s_sci_response, s_ss_response)
-dat = dat %>% rename(t_id=t_moreresearchid,
-                     sch_id=sch_researchid,
+dat = dat %>% rename(s_id = stu_id,
+                     t_id=tch_id,
                      more=s_itt_consented,
                      grade=s_grade)
 dat$grade=as.factor(dat$grade)
