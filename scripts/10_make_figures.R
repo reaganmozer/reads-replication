@@ -90,8 +90,8 @@ g2.soc=ccs_out[ccs_out$subject!="science" & ccs_out$grade==2,-c(1:2)]
 
 pdf(file="figures/Fig4a.pdf", width=9, height=5)
 par(mfrow=c(1,2))
-plot_ccs(g1.sci, main="G1 Science",xlim=c(-0.2,0.40))
-plot_ccs(g2.sci, main="G2 Science",xlim=c(-0.2,0.40))
+rcttext::plot_ccs(g1.sci, main="G1 Science",xlim=c(-0.2,0.40))
+rcttext::plot_ccs(g2.sci, main="G2 Science",xlim=c(-0.2,0.40))
 dev.off()
 
 
