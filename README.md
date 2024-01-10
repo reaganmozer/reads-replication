@@ -16,7 +16,9 @@ devtools::install_github("kbenoit/quanteda.dictionaries")
 
 
 ## Instructions
-First download the initial raw data and put it in the `data-raw` directory. Once the initial data are downloaded,  run the scripts in the `scripts` folder in the following order:
+The data used in this study has been made publicly available through the Harvard Dataverse and can be accessed [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/J9KSHU). Click the "Access Dataset" button and complete the data use agreement to download the relevant files.
+
+Once the initial raw data have been downloaded, put both CSV files into the `data-raw` folder of the directory, then run the scripts in the `scripts` folder in the following order:
 
 1. Run `00_setup.R` for initial configurations.
 2. Execute data processing scripts (`01_process_pilot.R`, `02_process_text.R`, `03_make_text_features.R`) in the order listed.
