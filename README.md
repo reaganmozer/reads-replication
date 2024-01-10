@@ -15,9 +15,11 @@ devtools::install_github("kbenoit/quanteda.dictionaries")
 ```	
 
 
-## Instructions
+## Replication Data
 The data used in this study has been made publicly available through the Harvard Dataverse and can be accessed [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/J9KSHU). Click the "Access Dataset" button and complete the data use agreement to download the relevant files.
 
+
+## Instructions
 Once the initial raw data have been downloaded, put both CSV files into the `data-raw` folder of the directory, then run the scripts in the `scripts` folder in the following order:
 
 1. Run `00_setup.R` for initial configurations.
@@ -33,26 +35,26 @@ The `data-external` folder is used to hold files generated for processing in ext
 
 The `scripts` folder contains the R code needed to replicate the analysis in Mozer et al. (2023). 
 
-### Setup \& Data Processing
+#### Setup \& Data Processing
 - `00_setup.R`: Initial setup configurations for the project.
 - `01_process_pilot.R`: Processes pilot data for training the machine learning model.
 - `02_process_text.R`: Processes and cleans essay texts.
 - `03_make_text_features.R`: Generates a large set of features for the text corpus.
 
-### Impact Estimation
+#### Impact Estimation
 - `04_estimate_impacts.R`: Estimates impacts on an array of text outcomes.
 - `05_compare_concept_words.R`: Estimates impacts on the usage of pre-identified concept words.
 
-### Analysis
+#### Analysis
 - `06_run_ccs.R`: Performs a Concise Comparative Summarization (CCS) analysis on the essays.
 - `07_train_ML_pilot.R`: Trains a machine learning model for predicting human-coded quality scores based on pilot data.
 - `08_estimate_ML_impacts.R`: Estimates treatment effects on fully machine-generated proxy outcomes.
 
-### Results Presentation
+#### Results Presentation
 - `09_make_tables.R`: Generates tables for summarizing data or results.
 - `10_make_figures.R`: Creates figures for data visualization.
 
-### General Purpose Scripts
+#### General Purpose Scripts
 - `utils.R`: Utility functions for text cleaning and data manipulation.
 - `cluster_threshold_C.R`: Determines the penalty `C` for a text regression model with clustering at the school level
 
