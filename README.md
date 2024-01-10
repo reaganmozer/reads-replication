@@ -1,5 +1,11 @@
 ## About 
-This repository contains the materials needed to replicate the analyses presented in **"Combining human and automated scoring methods in experimental assessments of writing: a case study tutorial"** by Mozer et al. (2023), forthcoming in the *Journal of Educational and Behavioral Statistics*.
+This repository contains the materials needed to replicate the analyses presented in **"Combining human and automated scoring methods in experimental assessments of writing: a case study tutorial"** by Mozer et al. (2023), forthcoming in the *Journal of Educational and Behavioral Statistics* [(publisher link)](https://journals.sagepub.com/doi/full/10.3102/10769986231207886).
+
+
+
+## Replication Data
+The data used in this study has been made publicly available through the Harvard Dataverse and can be accessed [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/J9KSHU). Click the "Access Dataset" button and complete the data use agreement to download the relevant files.
+
 
 ## System requirements
 Replication scripts require the following packages to be installed from Github:
@@ -13,11 +19,6 @@ devtools::install_github("reaganmozer/textmatch")
 devtools::install_github("quanteda/quanteda.sentiment")
 devtools::install_github("kbenoit/quanteda.dictionaries")
 ```	
-
-
-## Replication Data
-The data used in this study has been made publicly available through the Harvard Dataverse and can be accessed [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/J9KSHU). Click the "Access Dataset" button and complete the data use agreement to download the relevant files.
-
 
 ## Instructions
 Once the initial raw data have been downloaded, put both CSV files into the `data-raw` folder of the directory, then run the scripts in the `scripts` folder in the following order:
