@@ -7,7 +7,7 @@ This repository contains the materials needed to replicate the analyses presente
 The data used in this study has been made publicly available through the Harvard Dataverse and can be accessed [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/J9KSHU). Click the "Access Dataset" button and complete the data use agreement to download the relevant files.
 
 
-## System requirements
+## System Requirements
 Replication scripts require the following packages to be installed from Github:
 
 ```{r}
@@ -29,7 +29,7 @@ Once the initial raw data have been downloaded, put both CSV files into the `dat
 4. Proceed with analysis scripts (`06_run_ccs.R`, `07_train_ML_pilot.R`, `08_estimate_ML_impacts.R`).
 5. Finally, execute the results presentation scripts (`09_make_tables.R`, `10_make_figures.R`).
 
-Notes: scripts 1--8 generate intermediate data files that are stored in the `data-generated` folder as well as results and figures that are stored in the appropriate folders.
+Notes: scripts 1-8 generate intermediate data files that are stored in the `data-generated` folder as well as results and figures that are stored in the appropriate folders.
 The `data-external` folder is used to hold files generated for processing in external programs (e.g., LIWC and TAACO).
 
 ## Details
