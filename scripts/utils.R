@@ -63,13 +63,13 @@ get_impact_est = function(meta, yhat, interact=FALSE){
     Mod.Sci = lm( score_std ~ 0 + grade + maprit_imp_std + more:grade,
                   data=sci)
     vcov_clust = sandwich::vcovCL( Mod.Sci, sci$sch_id )
-    est.sci=coeftest( Mod.Sci, vcov. = vcov_clust )
+    est.sci= lmtest::coeftest( Mod.Sci, vcov. = vcov_clust )
 
     soc$grade = as.factor( soc$grade )
     Mod.SS = lm( score_std ~ 0 + grade + maprit_imp_std + more:grade,
                  data=soc)
     vcov_clust2 = sandwich::vcovCL( Mod.SS, soc$sch_id )
-    est.soc=coeftest( Mod.SS, vcov. = vcov_clust2 )
+    est.soc= lmtest::coeftest( Mod.SS, vcov. = vcov_clust2 )
     out=list(est.sci, est.soc)
 
     cat(texreg::screenreg(out,
@@ -83,11 +83,11 @@ get_impact_est = function(meta, yhat, interact=FALSE){
   } else {
     Mod.Sci = lm( score_std ~ as.factor(sch_id) + grade +  maprit_imp_std + more, data=sci)
     vcov_clust = sandwich::vcovCL( Mod.Sci, sci$t_id )
-    est.sci=coeftest( Mod.Sci, vcov. = vcov_clust )
+    est.sci= lmtest::coeftest( Mod.Sci, vcov. = vcov_clust )
 
     Mod.SS = lm( score_std ~ as.factor(sch_id) + grade + maprit_imp_std + more, data=soc)
     vcov_clust2 = sandwich::vcovCL( Mod.SS, soc$t_id )
-    est.soc=coeftest( Mod.SS, vcov. = vcov_clust2 )
+    est.soc= lmtest::coeftest( Mod.SS, vcov. = vcov_clust2 )
     out=list(est.sci, est.soc)
     cat(texreg::screenreg(out,
                           custom.model.names=c("Science", "Social Studies"),

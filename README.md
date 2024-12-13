@@ -1,22 +1,67 @@
-# The READS analysis replication file
+## About 
+This repository contains the materials needed to replicate the analyses presented in **"Combining human and automated scoring methods in experimental assessments of writing: a case study tutorial"** by Mozer et al. (2023), forthcoming in the *Journal of Educational and Behavioral Statistics* [(publisher link)](https://journals.sagepub.com/doi/full/10.3102/10769986231207886).
 
-This replicates the READS analysis from the paper.
-It also demos the `tada` package that automates a lot of the feature generation.
 
-# Using these scripts
-First download the initial raw data and put it in the `data-raw` directory.
-You can also download the word embedding file (glove), and put it in `data-raw` as well.
-This folder is for data that everything is built on, that we do not have in this git repository.
-We (will eventually) provide scripts to automate these initial steps.
 
-Once the initial data are downloaded, you should be able to run the scripts in the `scripts` folder in order.
-These scripts will generate intermediate data or results, and store them in appropriate folders.
-You can actually run the scripts out of order, if the files needed by the script are present; the top of the script will load those files so it should be easy to tell if you are ready to run any given script.
+## Replication Data
+The data used in this study has been made publicly available through the Harvard Dataverse and can be accessed [here](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/J9KSHU). Click the "Access Dataset" button and complete the data use agreement to download the relevant files.
 
-# Notes on generated intermediate data files
-These scripts generate intermediate data files that are stored in `data-generated`.
-Many (not all) of these generated files are in the git repo.
-Some of the intermediate files have the original raw data, and are thus not commited.  The scripts will regenerate them and save them in the folder, if you have the original raw data.
+
+## System Requirements
+Replication scripts require the following packages to be installed from Github:
+
+```{r}
+## rcttext and textmatch development packages
+devtools::install_github("reaganmozer/rcttext")
+devtools::install_github("reaganmozer/textmatch")
+
+## quanteda add-ons
+devtools::install_github("quanteda/quanteda.sentiment")
+devtools::install_github("kbenoit/quanteda.dictionaries")
+```	
+
+## Instructions
+Once the initial raw data have been downloaded, put both CSV files into the `data-raw` folder of the directory, then run the scripts in the `scripts` folder in the following order:
+
+1. Run `00_setup.R` for initial configurations.
+2. Execute data processing scripts (`01_process_pilot.R`, `02_process_text.R`, `03_make_text_features.R`) in the order listed.
+3. Run impact estimation scripts (`04_estimate_impacts.R`, `05_compare_concept_words.R`).
+4. Proceed with analysis scripts (`06_run_ccs.R`, `07_train_ML_pilot.R`, `08_estimate_ML_impacts.R`).
+5. Finally, execute the results presentation scripts (`09_make_tables.R`, `10_make_figures.R`).
+
+Notes: scripts 1-8 generate intermediate data files that are stored in the `data-generated` folder as well as results and figures that are stored in the appropriate folders.
+The `data-external` folder is used to hold files generated for processing in external programs (e.g., LIWC and TAACO).
+
+## Details
+
+The `scripts` folder contains the R code needed to replicate the analysis in Mozer et al. (2023). 
+
+#### Setup \& Data Processing
+- `00_setup.R`: Initial setup configurations for the project.
+- `01_process_pilot.R`: Processes pilot data for training the machine learning model.
+- `02_process_text.R`: Processes and cleans essay texts.
+- `03_make_text_features.R`: Generates a large set of features for the text corpus.
+
+#### Impact Estimation
+- `04_estimate_impacts.R`: Estimates impacts on an array of text outcomes.
+- `05_compare_concept_words.R`: Estimates impacts on the usage of pre-identified concept words.
+
+#### Analysis
+- `06_run_ccs.R`: Performs a Concise Comparative Summarization (CCS) analysis on the essays.
+- `07_train_ML_pilot.R`: Trains a machine learning model for predicting human-coded quality scores based on pilot data.
+- `08_estimate_ML_impacts.R`: Estimates treatment effects on fully machine-generated proxy outcomes.
+
+#### Results Presentation
+- `09_make_tables.R`: Generates tables for summarizing data or results.
+- `10_make_figures.R`: Creates figures for data visualization.
+
+#### General Purpose Scripts
+- `utils.R`: Utility functions for text cleaning and data manipulation.
+- `cluster_threshold_C.R`: Determines the penalty `C` for a text regression model with clustering at the school level
+
+
+
+
 
 # note on data-external
 This folder is to hold files generated for external processing (e.g., LIWC).
