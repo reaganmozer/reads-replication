@@ -21,3 +21,7 @@ Some of the intermediate files have the original raw data, and are thus not comm
 # note on data-external
 This folder is to hold files generated for external processing (e.g., LIWC).
 They are not saved on git as they will have the raw data.
+
+# note on data
+There are a few small files here that have, for example, the reference texts students were given before they were asked to write their essays.
+
