@@ -14,17 +14,19 @@ options(stringsAsFactors = FALSE)
 
 
 
-source("scripts/utils.R")
-load("data-generated/all.info.RData")
+source( here::here( "scripts/utils.R") )
 
-load("data-generated/all.ML.scores.RData")
+load( here::here( "data-generated/all.info.RData") )
+
+load( here::here( "data-generated/all.ML.scores.RData") )
 
 simil.scores = select(all.info, s_id, t_id, sch_id, grade, subject, tdm.raw.cosine)
 
 all.ML.scores = merge(all.ML.scores, simil.scores,
                       by=c("s_id","t_id","sch_id","grade","subject"))
 
-load("data-generated/meta.RData")
+load( here::here( "data-generated/meta.RData") )
+
 rownames(meta)=rownames(all.ML.scores)=NULL
 meta = merge(meta, all.ML.scores,
              by=c("s_id","t_id","sch_id","grade","subject"))

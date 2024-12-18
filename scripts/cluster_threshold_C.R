@@ -2,10 +2,10 @@
 
 
 #' Determine the penalty C that will zero out the textreg model for a series of
-#' randomly permuted labelings with random assignment dictated by a blocked and
+#' randomly permuted labeling with random assignment dictated by a blocked and
 #' cluster-randomized experiment.
 #'
-#' Method repeatidly generates +1/-1 vectors within the given blocking structure
+#' Method repeatedly generates +1/-1 vectors within the given blocking structure
 #' with blocks of +1/-1 within the clustering vector, and then finds a threshold
 #' C for each permutation.
 #'

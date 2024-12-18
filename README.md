@@ -61,12 +61,10 @@ The `scripts` folder contains the R code needed to replicate the analysis in Moz
 
 
 
-
-
-# note on data-external
-This folder is to hold files generated for external processing (e.g., LIWC).
+# Note on data-external
+This folder holds files generated for external processing (e.g., LIWC).
 They are not saved on git as they will have the raw data.
 
-# note on data
+# Note on data
 There are a few small files here that have, for example, the reference texts students were given before they were asked to write their essays.
 

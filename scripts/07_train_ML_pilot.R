@@ -1,4 +1,6 @@
-## Train an ML model to predict human-coded quality scores for the pilot data (G1 science essays from a different evaluation)
+
+## Train an ML model to predict human-coded quality scores for the
+## pilot data (G1 science essays from a different evaluation)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 setwd("../")
