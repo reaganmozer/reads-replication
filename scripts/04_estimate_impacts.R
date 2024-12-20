@@ -1,6 +1,7 @@
 #
-# Estimate impacts on top-line results (human-coded essay quality) and across the machine-generated measures of the text.
-#
+# Estimate impacts on top-line results (human-coded essay quality) and
+# across the machine-generated measures of the text.
+# 
 
 options(stringsAsFactors = FALSE)
 

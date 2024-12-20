@@ -1,5 +1,8 @@
 ## About 
-This repository contains the materials needed to replicate the analyses presented in **"Combining human and automated scoring methods in experimental assessments of writing: a case study tutorial"** by Mozer et al. (2023), forthcoming in the *Journal of Educational and Behavioral Statistics* [(publisher link)](https://journals.sagepub.com/doi/full/10.3102/10769986231207886).
+
+This branch of this repository is a simplified version of the replication files for **"Combining human and automated scoring methods in experimental assessments of writing: a case study tutorial"** by Mozer et al. (2023), forthcoming in the *Journal of Educational and Behavioral Statistics* [(publisher link)](https://journals.sagepub.com/doi/full/10.3102/10769986231207886).
+
+The goal of this branch is to make an easily usable vignette that shows how to use the `rcttext` package.
 
 
 
