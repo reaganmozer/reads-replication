@@ -36,3 +36,5 @@ dir.create(here::here("figures/"), showWarnings = FALSE )
 dir.create(here::here("tables/"), showWarnings = FALSE )
 dir.create(here::here("data-raw/"), showWarnings = FALSE )
 dir.create(here::here("data-external/"), showWarnings = FALSE )
+
+rm( pkgs )

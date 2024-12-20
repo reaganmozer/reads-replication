@@ -1,12 +1,4 @@
 
-clean_txt = function(x){
-  require(tm)
-  tmp = gsub(".", " . ", x, fixed=TRUE)
-  tmp = gsub(",", " . ", tmp, fixed=TRUE)
-  tmp = gsub("-", "  ", tmp, fixed=TRUE)
-  tmp = stripWhitespace(removePunctuation(tolower(tmp)))
-  return(tmp)
-}
 
 get_meta = function(grade=NULL,subject=NULL){
   load("generated_data/meta.RData")
