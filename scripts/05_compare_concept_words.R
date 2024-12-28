@@ -8,7 +8,8 @@ options(stringsAsFactors = FALSE)
 load( here::here( "data-generated/meta.RData" ) )
 
 
-# Data frame containing the concept words identified in the MORE study
+# Data frame containing the "concept words" identified in the MORE
+# study
 cwords = tibble::tribble(
   ~grade,  ~subject,      ~concept_word,    ~taught,
   1, "science",          "survive",   "taught",
@@ -61,58 +62,31 @@ cwords = tibble::tribble(
 )
 
 
-textfx_terms = function(x, Z, terms, ...){
-  
-  # Determine maximum number of ngrams to search based on the input terms
-  ngrams.terms = stringi::stri_count_words(terms)
-  max.ngrams = 1:max(ngrams.terms)
-  
-  # Convert ngrams to quanteda structure with underscores
-  terms = gsub(" ", "_", terms, fixed=T)
-  
-  dfm = quanteda::dfm(quanteda::tokens_ngrams(quanteda::tokens(x,...),n=max.ngrams))
-  dfm.terms = as.matrix(quanteda::dfm_match(dfm, terms))
-  
-  out = data.frame(Z=Z, dfm.terms, tot=rowSums(dfm.terms))
-  out = out %>%
-    group_by(Z) %>% 
-    summarise(n=n(), termfreq=sum(tot), docfreq=sum(tot>0), prop.docs=docfreq/n) %>% 
-    arrange(desc(Z))
-  
-  # Hypothesis test for difference in proportions between groups
-  test = prop.test(x=out$docfreq, n=out$n)
-  
-  
-  out1 = out %>% pivot_wider(names_from=Z, values_from=!Z) %>%
-    mutate(diff = test$estimate[1]-test$estimate[2],
-           p.value = test$p.value,
-           LL = test$conf.int[1],
-           UL = test$conf.int[2])
-  
-  return(out1)
-  
-}
-
-
-
 
 # Analyze separately for taught and untaught terms
 tmp = cwords %>%
-  group_by(grade,subject) %>% 
-  do(terms.taught=paste0(.$concept_word[.$taught=="taught"]),
-     terms.untaught = paste0(.$concept_word[.$taught=="untaught"]))
+  group_by(grade,subject,taught) %>% 
+  summarise( terms = list( concept_word ), .groups="drop" ) %>%
+  pivot_wider( values_from = terms, names_from = taught )
+tmp
 
-text1 = merge(text, tmp, by=c("grade", "subject"))
+text$grade = as.numeric(text$grade)            
+text1 = left_join(text, tmp, by=c("grade", "subject"))
+text1$taught[[1]]
 
+if ( FALSE ) {
+  # This function returns a line of statistics for term frequencies
+  textfx_terms( text$text, text$more, cwords$concept_word )
+}
 
 res.taught = text1 %>% 
   group_by(grade, subject) %>% 
-  do(rcttext::textfx_terms(.$text.sc, .$more, unique(unlist(.$terms.taught)))) %>%
+  do(  rcttext::textfx_terms(.$text.sc, .$more, unique(unlist(.$taught)))) %>%
   mutate(type="taught")
 
 res.untaught = text1 %>% 
   group_by(grade, subject) %>%
-  do(rcttext::textfx_terms(.$text.sc, .$more, unique(unlist(.$terms.untaught)))) %>% 
+  do(rcttext::textfx_terms(.$text.sc, .$more, unique(unlist(.$untaught)))) %>% 
   mutate(type="untaught")
 
 

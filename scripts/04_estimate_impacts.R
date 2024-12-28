@@ -5,6 +5,7 @@
 
 options(stringsAsFactors = FALSE)
 
+source( "scripts/00_setup.R" )
 
 load(here::here( "data-generated/meta.RData") )
 
@@ -18,16 +19,19 @@ meta$grade = as.factor(meta$grade)
 apply(meta,2,function(x)sum(is.na(x)))
 
 # Standardize pretest
-meta$maprit_std = scale(meta$s_maprit_1819w)
+meta$maprit_std = as.numeric( scale(meta$s_maprit_1819w) )
 
+
+# Explore the human scored outcomes ----
 
 stats = meta %>% group_by( subject, grade, more ) %>%
   summarise( mn = mean( score ),
              sd = sd( score ),
-             n = n() )
+             n = n(), .groups="drop" )
 stats
+
 avg_stats = stats %>% group_by( subject ) %>%
-    summarise( sd_bar = sqrt( weighted.mean( sd^2, w=n ) ) )
+  summarise( sd_bar = sqrt( weighted.mean( sd^2, w=n ) ) )
 avg_stats
 
 meta %>% group_by( subject ) %>%
@@ -45,7 +49,6 @@ soc$score_std = soc$score/avg_stats$sd_bar[[2]]
 
 Mod.Sci = lm( score_std ~ as.factor(sch_id) + grade +  maprit_std + more, data=sci)
 vcov_clust = sandwich::vcovCL( Mod.Sci, sci$t_id )
-vcov_clust
 est.sci=lmtest::coeftest( Mod.Sci, vcov. = vcov_clust )
 
 Mod.SS = lm( score_std ~ as.factor(sch_id) + grade +maprit_std + more, data=soc)
@@ -79,177 +82,146 @@ texreg::screenreg(list(est.sci, est.sci_sch, est.soc, est.soc_sch),
                                          "grade2"="Grade 2", "maprit_std"="Pre-test score", "more"="MORE"))
 
 
-
-if (FALSE){
-  # Multilevel model for science scores
-  mod.sci = lme4::lmer(score_std ~ 1 + grade + #mean.pretest+
-                   maprit_std +
-                   more + (1|sch_id) + (1|t_id),
-                 data=sci)
-  summary(mod.sci)
-  mod.sci1 = lme4::lmer(score_std ~ 1 + grade + #mean.pretest+
-                    maprit_std+
-                    more + grade*more+ (1|sch_id) + (1|t_id),
-                  data=sci)
-
-  lmtest::lrtest(mod.sci, mod.sci1)
-
-  # Multilevel model for social scores
-  mod.soc = lme4::lmer(score_std ~ 1 + grade + #mean.pretest+
-                   maprit_std +
-                   more + (1|sch_id) + (1|t_id),
-                 data=soc)
-
-  mod.soc1 = lme4::lmer(score_std ~ 1 + grade + #mean.pretest+
-                    maprit_std +
-                    more + (grade*more)+ (1|sch_id) + (1|t_id),
-                  data=soc )
-
-  lmtest::lrtest(mod.soc, mod.soc1)
-}
 save(Mod.Sci, Mod.SS, est.sci, est.soc, file="results/tx_models.RData")
 
+# Clean up workspace
+gdata::keep(text, meta, sure=TRUE)
 
 
 
 ##### Estimate treatment impacts on generated text features #####
 
 load("data-generated/all.info.RData")
-tmp = select(meta, ID, s_id, grade, subject, more, maprit_std)
-all.info = merge(tmp, all.info, by=c("ID", "s_id","grade", "subject", "more"))
+tmp = select(meta, ID, s_id, sch_id, grade, subject, more, maprit_std)
+all.info = merge(tmp, all.info, by=c("ID", "s_id", "sch_id", "grade", "subject", "more"))
+
+# Cut down to fewer features
+ncol(all.info)
+dat = dplyr::select( all.info, sch_id,t_id, more, maprit_std,subject,
+                     grade, spellcheck, lex_TTR:lex_ELF,
+                     xxx:liwc_Sixltr, liwc_prep:liwc_AllPunc,
+                     taaco_basic_connectives:taaco_addition, 
+                     taaco_reason_and_purpose:taaco_all_demonstratives,
+                     taaco_all_connective, taaco_pronoun_density)
+ncol(dat)
+names(dat)[1:20]
+
+dat = clean_features( dat,
+                      c( "sch_id", "t_id", "more", "maprit_std", "subject", "grade" ),
+                      cor = 0.90 )
+
+ncol( dat )
 
 
-dat = dplyr::select(all.info, sch_id,t_id,more, maprit_std,subject,
-                    grade, spellcheck, lex_TTR:lex_ELF,
-                    xxx:liwc_Sixltr, liwc_prep:liwc_AllPunc,
-                    taaco_basic_connectives:taaco_addition, taaco_reason_and_purpose:taaco_all_demonstratives,
-                    taaco_all_connective, taaco_pronoun_density)
 
-x = dat %>% select(-sch_id, -t_id, -more, -maprit_std, -subject, -grade)
-names(x)[caret::findLinearCombos(x)$remove]
-caret::findCorrelation(cor(dat[,-c(1:6)]),names=T,exact=T,cutoff=0.9)
-
-dat = select(dat, -lex_Flesch, -lex_ARI) # remove highly correlated features
-caret::findCorrelation(cor(dat[,-c(1:6)]),names=T,exact=T,cutoff=0.9)
-x = dat[,-c(1:6)]
-
-# find features with near zero variance
-rm=caret::nearZeroVar(x, uniqueCut = 2, freqCut=99/1, names=T)
-sort(apply(dat[,names(dat)%in%rm], 2, function(x)length(unique(x))))
-
-dat = dat %>% select( -liwc_filler, -liwc_sexual, -liwc_swear, -liwc_nonflu)
-
-
-#' For each column of x, conduct an analysis of impact of MORE intervention on
-#' feature represented by that column.
-#'
-#' Adjust all tests with FDR at end.
-get_diffs = function(d, x){
-  res = data.frame(var=names(x),
-                   est=NA, SE=NA, stat=NA,
-                   p.raw=NA, LL=NA, UL=NA )
-  tmp = select(d, sch_id, t_id, more, grade, maprit_std)
-  for (j in 1:ncol(x)){
-    tmp$var=x[,j]
-    tmp$more=as.factor(tmp$more)
-    mod = lm(var ~ maprit_std + more, data=tmp)
-    vc = sandwich::vcovCL(mod, tmp$sch_id)
-
-
-    est= lmtest::coeftest( mod, vcov. = vc )
-    CI = lmtest::coefci(mod, vcov.=vc)
-    res[j,2:5]=est[grep("more",rownames(est)),]
-    res[j,6:7] = CI[grep("more",rownames(CI)),]
-  }
-  return(res)
+my_analysis <- function( feature, data ) {
+  
+  stopifnot( !is.null(feature) )
+  
+  data$.feature = feature
+  mod = lm( .feature ~ maprit_std + more, data=data)
+  vc = sandwich::vcovCL(mod, data$sch_id)
+  
+  est = lmtest::coeftest( mod, vcov. = vc )
+  CI = lmtest::coefci(mod, vcov.=vc)
+  
+  res <- c( est[grep("more",rownames(est)),],
+            CI = CI[grep("more",rownames(CI)),] )
+  names(res) = c( "estimate", "std.error", "statistic", "p.value", "conf.low", "conf.high" )
+  res <- as_tibble_row( res )
+  
+  res$Grp_0 = mean( data$.feature[data$more==0] )
+  res$Grp_1 = mean( data$.feature[data$more==1] )
+  res$Grp_0_sd = sd( data$.feature[data$more==0] )
+  res$Grp_1_sd = sd( data$.feature[data$more==1] )
+  
+  res
 }
 
+a <- my_analysis( dat$spellcheck, data=tmp )
+a
 
-out=plyr::ddply(dat, ~subject+grade, function(d) get_diffs(d, x=d[,-c(1:6)]))
-add.vars = c("liwc_Analytic","liwc_Authentic","liwc_Clout","liwc_Tone",
-             "liwc_WC","liwc_WPS","liwc_Sixltr","xxx",
-             "lex_TTR","lex_Flesch.Kincaid")
+# The default in the package is basically the same, using lm_robust
+b <- simple_RCT_analysis( dat$spellcheck,
+                          formula = ~ more + maprit_std, data=tmp, cluster = tmp$sch_id )
+b
 
+# Minor differences in implementation of cluster robust SEs:
+bind_rows(a,b)
 
-out$planned=1*(out$var%in%add.vars)
-out.pl = out[out$planned==1,]
-out.un = out[out$planned==0,]
-out.pl$p.adj= p.adjust(out.pl$p.raw,"fdr")
-out.un$p.adj= p.adjust(out.un$p.raw,"fdr")
-out = rbind(out.pl, out.un)
+# What variables do we specifically test, vs. the many others we do
+# not care as much about?
+planned.vars = c("liwc_Analytic","liwc_Authentic","liwc_Clout","liwc_Tone",
+                 "liwc_WC","liwc_WPS","liwc_Sixltr","xxx",
+                 "lex_TTR","lex_Flesch.Kincaid")
 
-table(out$p.adj<=0.05, out$p.raw<=0.05)
+if ( FALSE ) {
+  # Illustration of code on full dataset, but we will do by subgroup.
+  all <- impacts_on_features( dat,
+                              ignore = c("sch_id", "t_id", "more", 
+                                         "maprit_std", "subject", "grade"),
+                              analysis_function = my_analysis, 
+                              planned_features = planned.vars,
+                              mcp = "fdr" )
+  # one row per feature of analysis
+  dim(all)
+}
 
-sig.vars = unique(out$var[which(out$p.adj<=0.05)])
+out <- dat %>%
+  group_by( subject, grade ) %>%
+  group_modify( ~impacts_on_features( .x,
+                                      ignore = c("sch_id", "t_id", "more", 
+                                                 "maprit_std", "subject", "grade"),
+                                      analysis_function = my_analysis, 
+                                      planned_features = planned.vars,
+                                      standardize = TRUE,
+                                      mcp = "fdr" ) )
 
-all.vars = unique(c(sig.vars,add.vars))
-
-
-diffs= all.info %>% group_by(subject, grade,more ) %>%
-  dplyr::summarise_at(add.vars, mean)
-
-diffs2 = all.info %>% group_by( subject, grade,more ) %>%
-  dplyr::summarise_at(sort(all.vars[!all.vars%in%names(diffs)]), mean)
-
-dd = diffs %>% pivot_longer(cols = -c(subject, grade,more ) ) %>%
-  pivot_wider( names_from = more, values_from = value,
-               names_prefix = "Grp_")
-dd2 = diffs2 %>% pivot_longer(cols = -c(subject, grade,more ) ) %>%
-  pivot_wider( names_from = more, values_from = value,
-               names_prefix = "Grp_")
-dd = bind_rows( dd, dd2 )
-dd =  dd %>%
-  mutate( delta =  Grp_1 - Grp_0 ) %>%
-  dplyr::rename( MORE="Grp_1",
-                 Control="Grp_0")
-
-dd = dd %>% pivot_wider(names_from=c(subject),
-                        values_from=c(Control,MORE,delta)) %>%
-  select(grade, name, ends_with("science"), ends_with("social"))
+table( adjusted = out$p.adj<=0.05, raw = out$p.value<=0.05)
 
 
 
-dd.out = arrange(dd, grade,name)
-dd.out.raw = dd.out
 
-out2 = out[out$var%in%all.vars,]
-names(out2)[grep("var",names(out2))]="name"
+# Clean up and arrange our four groups nicely ----
 
-d2 = all.info %>% group_by( subject, grade,more ) %>%
-  dplyr::summarise_at(all.vars, .funs = c( mn = mean, sd = sd ) )
+# Select only those features tagged by at least one of the four groups
+# as significant (plus the planned comparisons)
+sig.vars = unique(out$feature[which(out$p.adj<=0.05)])
+all.vars = unique(c(sig.vars,planned.vars))
 
-dd = d2 %>% pivot_longer(cols = -c(subject,grade, more ),
-                         names_to = c("name", ".value"),
-                         names_pattern = "(.*)_(.*)" ) %>%
-  pivot_wider( names_from =more, values_from=c(mn,sd) )
 
-dd = mutate( dd, delta = (mn_1 - mn_0) / ((sd_1+sd_0)/2) )
-dd = dd[dd$name%in%all.vars,]
+out2 = out %>%
+  filter( feature %in% all.vars ) 
 
+
+# Pretty results for printing; also renaming columns for later scripts
+dd = out2 %>%
+  mutate( name = feature,
+          Control = Grp_0 / scale,
+          MORE = Grp_1 / scale,
+          est = estimate_std,
+          LL = conf.low,
+          UL = conf.high,
+          LL.std = conf.low_std,
+          UL.std = conf.high_std,
+          delta = MORE - Control,
+          p.raw = p.value ) 
+
+dd.out <- dd %>%
+  select( grade, subject, name, Control, MORE,
+          est, LL, UL,
+          delta, LL.std, UL.std,
+          p.adj, p.raw)
+
+dd.out$pretty.CI.raw = paste0("(", sprintf("%.2f",round(dd.out$LL,2)), ", ",
+                              sprintf("%.2f",round(dd.out$UL,2)), ")")
+dd.out$pretty.CI.std = paste0("(", sprintf("%.2f",round(dd.out$LL.std,2)), ", ",
+                              sprintf("%.2f",round(dd.out$UL.std,2)), ")")
 
 dd = dd %>%
-  dplyr::select(  subject, grade,name,mn_0, sd_0,  mn_1, sd_1, delta ) %>%
-  dplyr::rename( MORE="mn_1",
-                 Control="mn_0",
-                 MORE_sd = sd_1,
-                 Co_sd = sd_0 )
+  select(grade, subject, name, delta, LL.std, UL.std, p.raw, p.adj)
 
-dd = merge(dd, out2, by=c("grade","subject","name"))
-dd$LL.std = dd$LL/((dd$MORE_sd+dd$Co_sd)/2)
-dd$UL.std = dd$UL/((dd$MORE_sd+dd$Co_sd)/2)
-
-
-dd.out = select(dd, grade, subject, name, Control, MORE,
-                est, LL, UL,
-                delta, LL.std, UL.std,
-                p.adj, p.raw)
-dd.out$pretty.CI.raw = paste0("(", sprintf("%.2f",round(dd$LL,2)), ", ",
-                              sprintf("%.2f",round(dd$UL,2)), ")")
-dd.out$pretty.CI.std = paste0("(", sprintf("%.2f",round(dd$LL.std,2)), ", ",
-                              sprintf("%.2f",round(dd$UL.std,2)), ")")
-
-dd = select(dd, grade, subject, name, delta, LL.std, UL.std, p.raw, p.adj)
-
+dd.out
 
 save(dd.out, dd, file="results/LIWC_diffs_results.RData")
 

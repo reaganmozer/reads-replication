@@ -53,73 +53,66 @@ scat = function( str, ... ) {
 }
 
 
+# Find threshold C and run textreg with that tuning parameter.
+# @return Textreg result object with the passed tuning parameter.
+tuned_textreg <- function( corpus, Z, cluster_id, ... ) {
+  require(textreg)
+  C = cluster.threshold.C( corpus, Z, cluster_id=cluster_id, R = 20)
+  C_L2 = quantile(C,0.80)
+  
+  scat( "L2 C: %.2f / %.2f\n", C[[1]], C_L2 )
+  res1 = textreg( corpus = corpus,
+                  Z,
+                  C = C_L2,
+                  ... )
+  res1
+}
 
 
 make.result.table = function( sc, more_sc, cluster_id ) {
-  require(textreg)
   
-  C = cluster.threshold.C( sc, more_sc, cluster_id=cluster_id, R = 10)
-  C
-  quantile(C,0.80)
-  scat( "L2 C: %.2f / %.2f\n", C[[1]], quantile(C,0.80) )
-  C_L2 = ceiling( quantile(C,0.80) )
-  res1 = textreg( corpus = sc,
-                  more_sc,
-                  C = C_L2,
-                  verbosity = 0)
-  res1
+  res1 = tuned_textreg( corpus = sc,
+                        more_sc, cluster_id,
+                        verbosity = 0)
   
-  res2 = textreg( corpus = sc,
-                  more_sc,
-                  C = C_L2, gap=1,
-                  verbosity = 0)
-  res2
+  res2 = tuned_textreg( corpus = sc,
+                        more_sc, cluster_id,
+                        gap=1,
+                        verbosity = 0)
   
-  res3 = textreg( corpus = sc,
-                  more_sc,
-                  C = C_L2, binary.features = TRUE,
-                  verbosity = 0)
-  res3
+  res3 = tuned_textreg( corpus = sc,
+                        more_sc, cluster_id,
+                        binary.features = TRUE,
+                        verbosity = 0)
   
-  
-  C = cluster.threshold.C( sc, more_sc, Lq = 3, cluster=cluster_id, R=10 )
-  C
-  C_L3 = ceiling( median( C ) )
-  quantile(C,0.80)
-  scat( "L3 C: %.2f / %.2f\n", C[[1]], quantile(C,0.80) )
-  
-  res4 = textreg( corpus = sc,
-                  more_sc,
-                  C = C_L3,
-                  Lq = 3,
-                  verbosity = 0)
+  res4 = tuned_textreg( corpus = sc,
+                        more_sc, cluster_id,
+                        Lq = 3,
+                        verbosity = 0)
   res4
   
   
-  
-  C = cluster.threshold.C( sc, more_sc, Lq = 1.5, cluster=cluster_id, R=10 )
-  C
-  quantile(C,0.80)
-  C_L1.5 = ceiling( quantile(C,0.80) )
-  scat( "L1.5 C: %.2f / %.2f\n", C[[1]], quantile(C,0.80) )
-  
-  res5 = textreg( corpus = sc,
-                  more_sc,
-                  C = C_L1.5,
-                  Lq = 1.5,
-                  verbosity = 0)
+  res5 = tuned_textreg( corpus = sc,
+                        more_sc, cluster_id,
+                        Lq = 1.5,
+                        verbosity = 0)
   res5
   
-  results = list( res1, res2,  res3, res4, res5 )
+  results = list( res1, res2, res3, res4, res5 )
+  
+  # Hack to drop trailing * due to poor implementation, sadly, of
+  # textreg.
   for ( i in 1:length(results) ) {
     results[[i]]$model$ngram = gsub( " \\*$", "", results[[i]]$model$ngram )
   }
   
-  tbl = make.list.table( results,
-                         model.names = paste( c("L2","L2 (gap)","L2 (bin)","L3","L1.5"),
-                                              round( c(C_L2, C_L2,C_L2,C_L3,C_L1.5),digits=1),
-                                              sep="-" ),
-                         method = "rank" )
+  Cs = map_dbl( results, \(.x) .x$notes$C )
+  
+  tbl = textreg::make.list.table( results,
+                                  model.names = paste( c("L2","L2 (gap)","L2 (bin)","L3","L1.5"),
+                                                       round( Cs, digits=1 ),
+                                                       sep="-" ),
+                                  method = "rank" )
   
   tbl
 }
@@ -166,8 +159,10 @@ r_Sci_g1 = make.result.table( corpus[ind1], more_pm[ind1], cluster_id = text$sch
 r_Sci_g1
 
 
-out_sci_g1= results.tab(r_Sci_g1, corp.sub=corpus[ind1],
-                        Z=text$more[ind1])
+out_sci_g1 = results.tab(r_Sci_g1, corp.sub=corpus[ind1],
+                         Z=text$more[ind1])
+out_sci_g1
+
 
 # Grade 2
 set.seed(1234)

@@ -22,8 +22,8 @@ load( here::here( "data-generated/all.ML.scores.RData") )
 
 simil.scores = select(all.info, s_id, t_id, sch_id, grade, subject, tdm.raw.cosine)
 
-all.ML.scores = merge(all.ML.scores, simil.scores,
-                      by=c("s_id","t_id","sch_id","grade","subject"))
+all.ML.scores = merge( all.ML.scores, simil.scores,
+                       by=c("s_id","t_id","sch_id","grade","subject"))
 
 load( here::here( "data-generated/meta.RData") )
 
@@ -47,9 +47,9 @@ out.ML = get_impact_est(meta, meta$stack, interact = T)
 
 meta$cos = 1-meta$tdm.raw.cosine
 meta %>% group_by( grade, subject ) %>%
-    summarise( to_sim = cor( Yobs, cos ),
-               to_ML = cor( Yobs, stack ),
-               sim_ML = cor( cos, stack) )
+  summarise( to_sim = cor( Yobs, cos ),
+             to_ML = cor( Yobs, stack ),
+             sim_ML = cor( cos, stack) )
 
 
 
