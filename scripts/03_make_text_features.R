@@ -46,7 +46,8 @@ all.feats = rcttext::extract_w2v( rcttext::clean_text(text$text.sc),
                                   model = glove.50d )
 
 
-# Measure distances between each essay and corresponding reference text ----
+
+# Measure distances between each essay and the reference texts ----
 
 load("data/ref_texts.RData")
 
@@ -54,43 +55,27 @@ all.refs = clean_text( all.refs )
 essays = clean_text( text$text.sc )
 
 names(all.refs) = ref.names
-all.refs = all.refs[ c( "G1.sci.both", "G1.soc.both", "G2.sci", "G2.soc.both") ]
-names(all.refs) <- str_replace( names(all.refs), ".both", "" )
 
-all.dists = pairwise_distances(essays, all.refs, 
-                               method="cosine" )
+all.dists = pairwise_distances( essays, all.refs, 
+                                method="cosine" )
 
 all.dists
 
-glove.dists = pairwise_distances(essays, all.refs,
-                                 method="w2v", model=glove.50d )
+glove.dists = pairwise_distances( essays, all.refs,
+                                  method="w2v", model=glove.50d )
 
-distances = bind_rows( tdm.raw.cosine = all.dists, glove.d50.cosine = glove.dists, .id="metric" )
-head( distances )
+all.dists <- left_join( all.dists, glove.dists, by="index.1" )
 
 tmp = subset(meta, select=c(s_id, subject, grade))
-stopifnot( nrow(distances) == 2*nrow(tmp) )
-all2 = bind_cols( rbind( tmp, tmp ),
-                  distances )
+stopifnot( nrow(all.dists) == nrow(tmp) )
+all2 = bind_cols( tmp, all.dists ) %>%
+  dplyr::select( -index.1 )
 head( all2 )
 
-all3 <- all2 %>%
-  mutate(
-    dist = case_when(
-          grade == 1 & subject == "science" ~ doc_G1.sci,
-          grade == 1 & subject == "social" ~ doc_G1.soc,
-          grade == 2 & subject == "science" ~ doc_G2.sci,
-          grade == 2 & subject == "social" ~ doc_G2.soc
-    ) ) %>%
-  dplyr::select( -doc_G1.sci, -doc_G1.soc, -doc_G2.sci, -doc_G2.soc ) %>%
-  pivot_wider( names_from = metric, values_from = dist )
-all3
-
-table(meta$grade,meta$subject)
 
 
 # Merge with existing feature set
-all.info = merge(all.feats, all3, by=c("s_id","grade","subject"))
+all.info = merge(all.feats, all2, by=c("s_id","grade","subject"))
 
 
 # Clean up: Trash all extra variables in workspace ----

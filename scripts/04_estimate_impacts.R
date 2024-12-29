@@ -9,80 +9,36 @@ source( "scripts/00_setup.R" )
 
 load(here::here( "data-generated/meta.RData") )
 
-# Characteristics of the sample
-length(unique(meta$s_id))
-length(unique(meta$sch_id))
-
-sum(is.na(meta$s_maprit_1819w))
-
-meta$grade = as.factor(meta$grade)
-apply(meta,2,function(x)sum(is.na(x)))
 
 # Standardize pretest
 meta$maprit_std = as.numeric( scale(meta$s_maprit_1819w) )
 
+meta = filter( meta, subject == "science" )
 
 # Explore the human scored outcomes ----
 
-stats = meta %>% group_by( subject, grade, more ) %>%
+stats = meta %>% group_by( more ) %>%
   summarise( mn = mean( score ),
              sd = sd( score ),
              n = n(), .groups="drop" )
 stats
 
-avg_stats = stats %>% group_by( subject ) %>%
-  summarise( sd_bar = sqrt( weighted.mean( sd^2, w=n ) ) )
-avg_stats
-
-meta %>% group_by( subject ) %>%
-  summarise( mn = mean( score ),
-             sd = sd( score ) )
-
-
-sci = meta[meta$subject=="science",]
-soc = meta[meta$subject!="science",]
-sci$score_std = sci$score/avg_stats$sd_bar[[1]]
-soc$score_std = soc$score/avg_stats$sd_bar[[2]]
-
+meta$score_std = meta$score / stats$sd[[1]]
 
 ##### Estimate main impacts #####
 
-Mod.Sci = lm( score_std ~ as.factor(sch_id) + grade +  maprit_std + more, data=sci)
-vcov_clust = sandwich::vcovCL( Mod.Sci, sci$t_id )
-est.sci=lmtest::coeftest( Mod.Sci, vcov. = vcov_clust )
+library( estimatr )
+Mod = lm_robust( score_std ~ as.factor(sch_id) + grade + maprit_std + more, data=meta,
+                 cluster =  meta$t_id )
+Mod_raw = lm_robust( score_std ~ as.factor(sch_id) + more, data=meta,
+                     cluster =  meta$t_id )
 
-Mod.SS = lm( score_std ~ as.factor(sch_id) + grade +maprit_std + more, data=soc)
-vcov_clust2 = sandwich::vcovCL( Mod.SS, soc$t_id )
-est.soc=lmtest::coeftest( Mod.SS, vcov. = vcov_clust2 )
-
-
-texreg::screenreg(list(est.sci, est.soc),
-                  custom.model.names=c("Science", "Social Studies"),
+texreg::screenreg(list(Mod, Mod_raw),
+                  custom.model.names=c("Adjusted", "Unadjusted"),
                   custom.coef.map = list("(Intercept)"=NA,
                                          "grade2"="Grade 2", "maprit_std"="Pre-test score", "more"="MORE"))
 
 
-
-# Sensitivity check: Clustering at school level (most conservative SE approach)
-vcov_clust_sch = sandwich::vcovCL( Mod.Sci, sci$sch_id )
-est.sci_sch=lmtest::coeftest( Mod.Sci, vcov. = vcov_clust_sch )
-
-vcov_clust2_sch = sandwich::vcovCL( Mod.SS, soc$sch_id )
-est.soc_sch=lmtest::coeftest( Mod.SS, vcov. = vcov_clust2_sch )
-
-# Relative SEs: about the same
-est.sci_sch[,2] / est.sci[,2]
-est.soc_sch[,2] / est.soc[,2]
-
-
-# Results basically identical.
-texreg::screenreg(list(est.sci, est.sci_sch, est.soc, est.soc_sch),
-                  custom.model.names=c("Science", "Sci (sch)", "Social Studies", "SS (sch)"),
-                  custom.coef.map = list("(Intercept)"=NA,
-                                         "grade2"="Grade 2", "maprit_std"="Pre-test score", "more"="MORE"))
-
-
-save(Mod.Sci, Mod.SS, est.sci, est.soc, file="results/tx_models.RData")
 
 # Clean up workspace
 gdata::keep(text, meta, sure=TRUE)
@@ -93,7 +49,7 @@ gdata::keep(text, meta, sure=TRUE)
 
 load("data-generated/all.info.RData")
 tmp = select(meta, ID, s_id, sch_id, grade, subject, more, maprit_std)
-all.info = merge(tmp, all.info, by=c("ID", "s_id", "sch_id", "grade", "subject", "more"))
+all.info = left_join(tmp, all.info, by=c("ID", "s_id", "sch_id", "subject", "grade", "more"))
 
 # Cut down to fewer features
 ncol(all.info)
@@ -119,7 +75,7 @@ my_analysis <- function( feature, data ) {
   stopifnot( !is.null(feature) )
   
   data$.feature = feature
-  mod = lm( .feature ~ maprit_std + more, data=data)
+  mod = lm( .feature ~ maprit_std + grade + more, data=data)
   vc = sandwich::vcovCL(mod, data$sch_id)
   
   est = lmtest::coeftest( mod, vcov. = vc )
@@ -143,7 +99,7 @@ a
 
 # The default in the package is basically the same, using lm_robust
 b <- simple_RCT_analysis( dat$spellcheck,
-                          formula = ~ more + maprit_std, data=tmp, cluster = tmp$sch_id )
+                          formula = ~ more + grade + maprit_std, data=tmp, cluster = tmp$sch_id )
 b
 
 # Minor differences in implementation of cluster robust SEs:
@@ -155,73 +111,50 @@ planned.vars = c("liwc_Analytic","liwc_Authentic","liwc_Clout","liwc_Tone",
                  "liwc_WC","liwc_WPS","liwc_Sixltr","xxx",
                  "lex_TTR","lex_Flesch.Kincaid")
 
-if ( FALSE ) {
-  # Illustration of code on full dataset, but we will do by subgroup.
-  all <- impacts_on_features( dat,
+
+
+  out <- impacts_on_features( dat,
                               ignore = c("sch_id", "t_id", "more", 
                                          "maprit_std", "subject", "grade"),
                               analysis_function = my_analysis, 
                               planned_features = planned.vars,
                               mcp = "fdr" )
-  # one row per feature of analysis
-  dim(all)
-}
+  
 
-out <- dat %>%
-  group_by( subject, grade ) %>%
-  group_modify( ~impacts_on_features( .x,
-                                      ignore = c("sch_id", "t_id", "more", 
-                                                 "maprit_std", "subject", "grade"),
-                                      analysis_function = my_analysis, 
-                                      planned_features = planned.vars,
-                                      standardize = TRUE,
-                                      mcp = "fdr" ) )
-
+out
 table( adjusted = out$p.adj<=0.05, raw = out$p.value<=0.05)
 
 
+out
 
 
-# Clean up and arrange our four groups nicely ----
+# Impacts on "concept words"
 
-# Select only those features tagged by at least one of the four groups
-# as significant (plus the planned comparisons)
-sig.vars = unique(out$feature[which(out$p.adj<=0.05)])
-all.vars = unique(c(sig.vars,planned.vars))
+## Estimate impacts on the prevalence and frequency of use of a list of pre-identified
+# "concept" words and phrases within each grade and subject
 
-
-out2 = out %>%
-  filter( feature %in% all.vars ) 
+options(stringsAsFactors = FALSE)
 
 
-# Pretty results for printing; also renaming columns for later scripts
-dd = out2 %>%
-  mutate( name = feature,
-          Control = Grp_0 / scale,
-          MORE = Grp_1 / scale,
-          est = estimate_std,
-          LL = conf.low,
-          UL = conf.high,
-          LL.std = conf.low_std,
-          UL.std = conf.high_std,
-          delta = MORE - Control,
-          p.raw = p.value ) 
 
-dd.out <- dd %>%
-  select( grade, subject, name, Control, MORE,
-          est, LL, UL,
-          delta, LL.std, UL.std,
-          p.adj, p.raw)
+load( here::here( "data-generated/meta.RData" ) )
 
-dd.out$pretty.CI.raw = paste0("(", sprintf("%.2f",round(dd.out$LL,2)), ", ",
-                              sprintf("%.2f",round(dd.out$UL,2)), ")")
-dd.out$pretty.CI.std = paste0("(", sprintf("%.2f",round(dd.out$LL.std,2)), ", ",
-                              sprintf("%.2f",round(dd.out$UL.std,2)), ")")
+cwords_untaught <- c("potential", "unique", "camouflage", "diversity", "carnivore", "hypothesis", "organism", "trait", "reptile")
+cwords_taught <- c("survive", "species", "behavior", "advantage", "adaptation", "habitat", "physical_feature", "extinct", "fossil", "brutal", "evidence", "theory", "hunter", "paleontologist")
 
-dd = dd %>%
-  select(grade, subject, name, delta, LL.std, UL.std, p.raw, p.adj)
 
-dd.out
+# This function returns a line of statistics for term frequencies
+r1 <- textfx_terms( text$text, text$more, cwords_untaught )
+r2 <- textfx_terms( text$text, text$more, cwords_taught )
 
-save(dd.out, dd, file="results/LIWC_diffs_results.RData")
+bind_rows( r1, r2 ) %>%
+  knitr::kable( digits=2 )
+
+
+
+
+
+
+
+
 

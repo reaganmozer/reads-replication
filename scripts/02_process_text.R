@@ -12,8 +12,7 @@
 
 source( here::here( "scripts/00_setup.R" ) )
 
-dat1=read_rds( "data-generated/student_essays.RData" )
-
+dat1=read_rds( "data-generated/student_essays.RData" ) 
 
 reads.dict=read.table( here::here("data/reads_dict.txt") ) 
 head( reads.dict )
