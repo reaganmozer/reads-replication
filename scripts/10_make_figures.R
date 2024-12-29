@@ -1,6 +1,5 @@
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-setwd("../")
-options(stringsAsFactors = F)
+
+source( here::here( "scripts/00_setup.R" ) )
 
 
 

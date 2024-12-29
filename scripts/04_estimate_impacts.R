@@ -155,6 +155,7 @@ planned.vars = c("liwc_Analytic","liwc_Authentic","liwc_Clout","liwc_Tone",
                  "liwc_WC","liwc_WPS","liwc_Sixltr","xxx",
                  "lex_TTR","lex_Flesch.Kincaid")
 
+
 if ( FALSE ) {
   # Illustration of code on full dataset, but we will do by subgroup.
   all <- impacts_on_features( dat,
