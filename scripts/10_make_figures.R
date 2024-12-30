@@ -29,9 +29,9 @@ load("results/LIWC_diffs_results.RData")
 
 
 dd$name = stringi::stri_replace_all_regex(dd$name,
-                       pattern=c('lex_','liwc_','taaco_'),
-                       replacement=c('','',''),
-                       vectorize=FALSE)
+                                          pattern=c('lex_','liwc_','taaco_'),
+                                          replacement=c('','',''),
+                                          vectorize=FALSE)
 dd.plot = select(dd, grade, subject, name, delta, LL.std, UL.std, p.adj)
 names(dd.plot)[-c(1:3)]=c("est","LL","UL","p.adj")
 
@@ -70,15 +70,9 @@ par(mfrow=c(1,1))
 
 
 
-# Figure 3: CCS plots
-load("data-generated/meta.RData")
-sums = meta %>% group_by(grade, subject) %>% summarise(ntreat = sum(more),
-                                                       ncontrol=sum(1-more))
+# CCS plots ----
 
 load("results/CCS_results.RData")
-
-ccs_out = merge(ccs_out, sums, by=c("subject","grade"))
-
 
 g1.sci=ccs_out[ccs_out$subject=="science" & ccs_out$grade==1,-c(1:2)]
 g2.sci=ccs_out[ccs_out$subject=="science" & ccs_out$grade==2,-c(1:2)]
@@ -103,18 +97,26 @@ par(mfrow=c(1,1))
 
 
 
-## Figure 4: Distribution of similarity scores
+# Figure: Distribution of similarity scores ----
+
 levels(all.info$subject)=c("Science","Social Studies")
 levels(all.info$grade)=c("Grade 1", "Grade 2")
-ggplot(all.info, aes(x=1-tdm.raw.cosine, col=as.factor(more),fill=as.factor(more)))+
+
+ggplot(all.info, aes(x=1-tdm.raw.cosine, 
+                     col=as.factor(more),
+                     fill=as.factor(more))) +
   geom_hline(yintercept=0, col="black")+
   facet_grid(grade~subject,scales="free_y")+
   geom_density(size=1.05, position="identity", alpha=0.2)+
   labs(x="Cosine similarity",y="Density")+
-  scale_colour_discrete(name = "", labels = c("Control","Treatment"),aesthetics=c("colour","fill"))+
+  scale_colour_discrete(name = "", 
+                        labels = c("Control","Treatment"),
+                        aesthetics=c("colour","fill"))+
   scale_x_continuous(limits=c(-0.1,1.0))+
-  theme(axis.text.x = element_text(size=11), legend.text = element_text(size=11),
+  theme(axis.text.x = element_text(size=11), 
+        legend.text = element_text(size=11),
         legend.position="bottom")
+
 ggsave("figures/Fig5.pdf", width=8, height=6)
 
 

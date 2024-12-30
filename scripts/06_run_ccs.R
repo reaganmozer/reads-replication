@@ -7,45 +7,25 @@ options(stringsAsFactors = FALSE)
 source( here::here( "scripts/cluster_threshold_C.R" ) )
 
 library( tidyverse )
-library( tm )
+library( rcttext )
 
 
 #### Load the data #####
 
 load( here::here( "data-generated/meta.RData" ) )
 
-
 text$sch_id = meta$sch_id
 text$sch_gr_block = paste0( meta$sch_id, "-", meta$grade )
 
-
 table( paste0( text$subject, "-", text$grade  ), Tx=text$more )
-
 
 # Number essays in each of our 4 groups
 table( text$grade, text$subject )
 
 text$more_pm = 2 * text$more - 1
-more_pm  = text$more_pm
 
 
-# Make corpus object
-
-clean.txt = function(x){
-  out = stripWhitespace(removeNumbers(removePunctuation(tolower(x))))
-  out
-}
-
-corpus = tm::VCorpus( VectorSource( clean.txt(text$text.sc ) ))
-
-#corpus = clean.text( corpus )
-corpus
-
-raw_corpus = tm::VCorpus( VectorSource(text$text ) )
-raw_corpus = tm::tm_map(raw_corpus, content_transformer(tolower))
-
-
-###### Function to fit a collection of standard models to look at ######
+###### Function to fit a collection of standard CCS models ######
 
 
 scat = function( str, ... ) {
@@ -69,7 +49,7 @@ tuned_textreg <- function( corpus, Z, cluster_id, ... ) {
 }
 
 
-make.result.table = function( sc, more_sc, cluster_id ) {
+make.result.list = function( sc, more_sc, cluster_id ) {
   
   res1 = tuned_textreg( corpus = sc,
                         more_sc, cluster_id,
@@ -98,55 +78,14 @@ make.result.table = function( sc, more_sc, cluster_id ) {
                         verbosity = 0)
   res5
   
-  results = list( res1, res2, res3, res4, res5 )
+  results = list( L2 = res1, `L2 (gap)` = res2, 
+                  `L2 (bin)` = res3, L3 = res4, L1.5 = res5 )
   
-  # Hack to drop trailing * due to poor implementation, sadly, of
-  # textreg.
-  for ( i in 1:length(results) ) {
-    results[[i]]$model$ngram = gsub( " \\*$", "", results[[i]]$model$ngram )
-  }
-  
-  Cs = map_dbl( results, \(.x) .x$notes$C )
-  
-  tbl = textreg::make.list.table( results,
-                                  model.names = paste( c("L2","L2 (gap)","L2 (bin)","L3","L1.5"),
-                                                       round( Cs, digits=1 ),
-                                                       sep="-" ),
-                                  method = "rank" )
-  
-  tbl
+  results
 }
 
 
-results.tab = function(result, corp.sub, Z) {
-  result$n.mods = sapply(1:nrow(result),function(x) sum(!is.na(result[x,c(2:6)])))
-  tmp = subset(result,select=c(phrase, n.mods, num.reports, num.tag))
-  tmp$count.neg = tmp$num.reports-tmp$num.tag
-  names(tmp)=c("phrase","n.mods","docs.total", "docs1","docs0")
-  tmp2 = tmp %>% mutate(prop.docs1= docs1/sum(Z),
-                        prop.docs0 = docs0/sum(1-Z),
-                        prop.diff = prop.docs1-prop.docs0)
-  
-  
-  phrases = unique(tmp2$phrase)
-  m = make.phrase.matrix(phrases, corp.sub)
-  tmp2$phrase.tot = colSums(m)
-  tmp2$tot1 = colSums(m[Z==1,])
-  tmp2$tot0 = colSums(m[Z==0,])
-  
-  out = select(tmp2, phrase, n.mods, tot1, tot0,prop.diff)
-  out$docs1 = paste0(tmp2$docs1, " (",round(tmp2$prop.docs1,2)*100, "%)")
-  out$docs0 = paste0(tmp2$docs0, " (",round(tmp2$prop.docs0,2)*100, "%)")
-  out$diff.val=tmp2$prop.diff
-  out$diff = paste0(round(tmp2$prop.diff,2)*100,"%")
-  out$diff[tmp2$prop.diff>0]=paste0("+",out$diff[tmp2$prop.diff>0])
-  #out$docs.diff = paste0(round(tmp2$prop.diff*100,1),"%")
-  out = out[with(out,order(desc(n.mods),desc(prop.diff))),]
-  out = select(out, phrase, n.mods, tot1, tot0,docs1, docs0, diff, diff.val)
-  rownames(out)=NULL
-  out
-}
-
+# Do the analysis ----
 
 # Initial pass: find threshold regularization
 ind1 = which(text$subject=="science" & text$grade==1)
@@ -155,22 +94,24 @@ ind2 = which(text$subject=="science" & text$grade==2)
 
 # Grade 1 science
 set.seed(1234)
-r_Sci_g1 = make.result.table( corpus[ind1], more_pm[ind1], cluster_id = text$sch_id[ind1] )
+sci_g1 = make.result.list( text$text[ind1], text$more_pm[ind1], 
+                           cluster_id = text$sch_id[ind1] )
+r_Sci_g1 = ccs_list_table( sci_g1 )
 r_Sci_g1
 
-
-out_sci_g1 = results.tab(r_Sci_g1, corp.sub=corpus[ind1],
-                         Z=text$more[ind1])
+out_sci_g1 = ccs_result_table(r_Sci_g1, corpus=text$text[ind1],
+                              Z=text$more[ind1])
 out_sci_g1
 
 
 # Grade 2
 set.seed(1234)
-r_Sci_g2 = make.result.table( corpus[ind2], more_pm[ind2], cluster_id = text$sch_id[ind2] )
+sci_g2 = make.result.list( text$text[ind2], text$more_pm[ind2], cluster_id = text$sch_id[ind2] )
+r_Sci_g2 = ccs_list_table( sci_g2 )
 r_Sci_g2
 
-out_sci_g2= results.tab(r_Sci_g2, corp.sub=corpus[ind2],
-                        Z=text$more[ind2])
+out_sci_g2= ccs_result_table(r_Sci_g2, corpus=text$text[ind2],
+                             Z=text$more[ind2])
 
 out_sci = data.frame(subject="science", 
                      grade=c(rep(1,nrow(out_sci_g1)), 
@@ -183,19 +124,21 @@ ind4 = which(text$subject!="science" & text$grade==2)
 
 # Grade 1
 set.seed(1234)
-r_Soc_g1 = make.result.table( corpus[ind3], more_pm[ind3], cluster_id = text$sch_id[ind3] )
+soc_g1 = make.result.list( text$text[ind3], text$more_pm[ind3], cluster_id = text$sch_id[ind3] )
+r_Soc_g1 = ccs_list_table( soc_g1 )
 r_Soc_g1
 
-out_soc_g1= results.tab(r_Soc_g1, corp.sub=corpus[ind3],
-                        Z=text$more[ind3])
+out_soc_g1= ccs_result_table(r_Soc_g1, corpus=text$text[ind3],
+                             Z=text$more[ind3])
 
 # Grade 2
 set.seed(1234)
-r_Soc_g2 = make.result.table( corpus[ind4], more_pm[ind4], cluster_id = text$sch_id[ind4] )
+soc_g2 = make.result.list( text$text[ind4], text$more_pm[ind4], cluster_id = text$sch_id[ind4] )
+r_Soc_g2 = ccs_list_table( soc_g2 )
 r_Soc_g2
 
-out_soc_g2= results.tab(r_Soc_g2, corp.sub=corpus[ind4],
-                        Z=text$more[ind4])
+out_soc_g2 = ccs_result_table(r_Soc_g2, corpus=text$text[ind4],
+                             Z=text$more[ind4])
 
 out_soc = data.frame(subject="social", 
                      grade=c(rep(1,nrow(out_soc_g1)),
@@ -207,8 +150,8 @@ ccs_out = rbind(out_sci, out_soc)
 ccs_out$grade=as.factor(ccs_out$grade)
 ccs_out$subject=as.factor(ccs_out$subject)
 
-save(r_Sci_g1, r_Sci_g2,
-     r_Soc_g1, r_Soc_g2,
-     ccs_out,
-     file="results/CCS_results.RData" )
+save( r_Sci_g1, r_Sci_g2,
+      r_Soc_g1, r_Soc_g2,
+      ccs_out,
+      file="results/CCS_results.RData" )
 

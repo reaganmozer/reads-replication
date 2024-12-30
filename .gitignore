@@ -2,11 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
-data-raw/write_machinelearning_pilot_replication.csv
-data-raw/write_machinelearning_replication_main.csv
 data-external/
 .DS_Store
 data-generated/pilotML_model.RData
 results/
 figures/
 tables/
+data-raw/

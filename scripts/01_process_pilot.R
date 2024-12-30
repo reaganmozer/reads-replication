@@ -7,6 +7,7 @@ source( here::here( "scripts/00_setup.R" ) )
 pilot = read.csv( here::here( "data-raw/write_machinelearning_pilot_replication.csv" ),
                  encoding='WINDOWS-1252')
 
+names( pilot )
 
 pilot <- pilot %>% mutate(ID=row_number())
 

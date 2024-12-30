@@ -21,6 +21,7 @@ apply(meta,2,function(x)sum(is.na(x)))
 # Standardize pretest
 meta$maprit_std = as.numeric( scale(meta$s_maprit_1819w) )
 
+names( meta )
 
 # Explore the human scored outcomes ----
 
