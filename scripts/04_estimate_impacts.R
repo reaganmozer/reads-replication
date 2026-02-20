@@ -192,12 +192,14 @@ sig.vars = unique(out$feature[which(out$p.adj<=0.05)])
 all.vars = unique(c(sig.vars,planned.vars))
 
 
-out2 = out %>%
+dd = out %>%
+  ungroup() %>%
   filter( feature %in% all.vars ) 
 
 
-# Pretty results for printing; also renaming columns for later scripts
-dd = out2 %>%
+
+# Make a pretty version for printing; also renaming columns for later scripts
+dd.out = dd %>%
   mutate( name = feature,
           Control = Grp_0 / scale,
           MORE = Grp_1 / scale,
@@ -207,9 +209,7 @@ dd = out2 %>%
           LL.std = conf.low_std,
           UL.std = conf.high_std,
           delta = MORE - Control,
-          p.raw = p.value ) 
-
-dd.out <- dd %>%
+          p.raw = p.value ) %>%
   select( grade, subject, name, Control, MORE,
           est, LL, UL,
           delta, LL.std, UL.std,
@@ -220,8 +220,6 @@ dd.out$pretty.CI.raw = paste0("(", sprintf("%.2f",round(dd.out$LL,2)), ", ",
 dd.out$pretty.CI.std = paste0("(", sprintf("%.2f",round(dd.out$LL.std,2)), ", ",
                               sprintf("%.2f",round(dd.out$UL.std,2)), ")")
 
-dd = dd %>%
-  select(grade, subject, name, delta, LL.std, UL.std, p.raw, p.adj)
 
 dd.out
 

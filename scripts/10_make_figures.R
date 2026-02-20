@@ -28,32 +28,45 @@ levels(all.info$subject)=c("Science", "Social Studies")
 load("results/LIWC_diffs_results.RData")
 
 
-dd$name = stringi::stri_replace_all_regex(dd$name,
+dd$feature = stringi::stri_replace_all_regex(dd$feature,
                                           pattern=c('lex_','liwc_','taaco_'),
                                           replacement=c('','',''),
                                           vectorize=FALSE)
-dd.plot = select(dd, grade, subject, name, delta, LL.std, UL.std, p.adj)
-names(dd.plot)[-c(1:3)]=c("est","LL","UL","p.adj")
 
 
+dd$type = ifelse( dd$feature %in% c("WC","WPS","TTR","R", "Flesch", "xxx",
+                                         "Sixltr",'Flesch.Kincaid','Flesch',
+                                         "Analytic","Authentic","Clout","Tone","ARI"), 
+                       "Planned", "Unplanned" )
 
-dd.plot$type = ifelse(dd.plot$name%in%c("WC","WPS","TTR","R", "Flesch", "xxx","Sixltr",'Flesch.Kincaid','Flesch',
-                                        "Analytic","Authentic","Clout","Tone","ARI"), "Planned", "Unplanned")
 
-
-dd.sci = dd.plot %>% filter(subject=="science")%>% select(-subject)
-dd.soc = dd.plot %>% filter(subject!="science")%>% select(-subject)
+dd.sci = dd %>% 
+  filter(subject=="science") %>%
+  select(-subject)
+dd.soc = dd %>% 
+  filter(subject!="science") %>%
+  select(-subject)
 
 
 #### MAP THE FUNCTION BELOW TO PLOT_TEXTFX IN TADA!
+
 ## Figure 2: Planned comparisons of LIWC features
-par(mfrow=c(2,2),mar=c(4.1,8.9,2.5,1.1),mgp=c(2.5,0.5,0))
 pdf(file="figures/Fig2.pdf", width=9, height=8)
-par(mfrow=c(2,2),mar=c(4.1,8.9,2.5,1.1),mgp=c(2.5,0.5,0))
-rcttext::plot_textfx(dd.sci[dd.sci$grade==1 & dd.sci$type=="Planned",], main="Grade 1 Science",xlim=c(-0.8,0.8))
-rcttext::plot_textfx(dd.soc[dd.soc$grade==1 & dd.sci$type=="Planned",], main="Grade 1 Social Studies",xlim=c(-0.8,0.8))
-rcttext::plot_textfx(dd.sci[dd.sci$grade==2 & dd.sci$type=="Planned",], main="Grade 2 Science",xlim=c(-0.8,0.8))
-rcttext::plot_textfx(dd.soc[dd.soc$grade==2 & dd.sci$type=="Planned",], main="Grade 2 Social Studies",xlim=c(-0.8,0.8))
+par(mfrow=c(2,2),
+    mar=c(4.1,8.9,2.5,1.1),
+    mgp=c(2.5,0.5,0))
+rcttext::plot_textfx(dd.sci[dd.sci$grade==1 & dd.sci$type=="Planned",], 
+                     main="Grade 1 Science",
+                     xlim=c(-0.8,0.8))
+rcttext::plot_textfx(dd.soc[dd.soc$grade==1 & dd.sci$type=="Planned",],
+                     main="Grade 1 Social Studies",
+                     xlim=c(-0.8,0.8))
+rcttext::plot_textfx(dd.sci[dd.sci$grade==2 & dd.sci$type=="Planned",],
+                     main="Grade 2 Science",
+                     xlim=c(-0.8,0.8))
+rcttext::plot_textfx(dd.soc[dd.soc$grade==2 & dd.sci$type=="Planned",],
+                     main="Grade 2 Social Studies",
+                     xlim=c(-0.8,0.8))
 dev.off()
 par(mfrow=c(1,1))
 
@@ -107,7 +120,7 @@ ggplot(all.info, aes(x=1-tdm.raw.cosine,
                      fill=as.factor(more))) +
   geom_hline(yintercept=0, col="black")+
   facet_grid(grade~subject,scales="free_y")+
-  geom_density(size=1.05, position="identity", alpha=0.2)+
+  geom_density(linewidth=1.05, position="identity", alpha=0.2)+
   labs(x="Cosine similarity",y="Density")+
   scale_colour_discrete(name = "", 
                         labels = c("Control","Treatment"),

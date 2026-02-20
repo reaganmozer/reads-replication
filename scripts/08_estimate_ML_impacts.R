@@ -49,7 +49,7 @@ meta$cos = 1-meta$tdm.raw.cosine
 meta %>% group_by( grade, subject ) %>%
   summarise( to_sim = cor( Yobs, cos ),
              to_ML = cor( Yobs, stack ),
-             sim_ML = cor( cos, stack) )
+             sim_ML = cor( cos, stack), .groups = "drop" )
 
 
 

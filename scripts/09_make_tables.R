@@ -1,3 +1,6 @@
+
+library( tidyverse )
+
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 setwd("../")
 options(stringsAsFactors = FALSE)
